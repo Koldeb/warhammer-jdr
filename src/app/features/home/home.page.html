@@ -1,0 +1,55 @@
+@if (campaign.value(); as c) {
+  <section class="mb-10">
+    <h1 class="font-serif text-4xl text-amber-200">{{ c.name }}</h1>
+    <p class="mt-1 text-sm text-stone-400">
+      MJ : {{ c.gameMaster }} · Lieu actuel : {{ c.currentLocation }}
+    </p>
+    <p class="mt-4 max-w-3xl leading-relaxed">{{ c.pitch }}</p>
+
+    <div class="mt-6 rounded border border-stone-700 bg-stone-900 p-4">
+      <h2 class="font-serif text-xl text-amber-200">{{ c.party.name }}</h2>
+      <p class="mt-2"><span class="text-stone-400">Ambition courte :</span> {{ c.party.shortTermAmbition }}</p>
+      <p><span class="text-stone-400">Ambition longue :</span> {{ c.party.longTermAmbition }}</p>
+    </div>
+  </section>
+}
+
+<section class="mb-10">
+  <h2 class="mb-4 font-serif text-2xl text-amber-200">
+    {{ auth.isGm() ? 'Personnages' : 'Mes personnages' }}
+  </h2>
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    @for (ch of characters.value() ?? []; track ch.id) {
+      <a
+        [routerLink]="['/personnages', ch.id]"
+        class="rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
+      >
+        <h3 class="font-serif text-lg text-amber-100">{{ ch.name }}</h3>
+        <p class="text-sm text-stone-400">
+          {{ speciesLabels[ch.species] }} · {{ ch.career.title }} ({{ ch.career.name }})
+        </p>
+        @if (auth.isGm()) {
+          <p class="mt-2 text-xs text-stone-500">Joué par {{ playerNames().get(ch.playerId) }}</p>
+        }
+      </a>
+    } @empty {
+      @if (!characters.isLoading()) {
+        <p class="text-stone-400">Aucune fiche pour le moment.</p>
+      }
+    }
+  </div>
+</section>
+
+@if (lastSession.value(); as s) {
+  <section>
+    <h2 class="mb-4 font-serif text-2xl text-amber-200">Dernière séance</h2>
+    <a
+      [routerLink]="['/journal', s.id]"
+      class="block rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
+    >
+      <h3 class="font-serif text-lg text-amber-100">#{{ s.number }} — {{ s.title }}</h3>
+      <p class="text-sm text-stone-400">{{ s.inGameDate }}</p>
+      <p class="mt-2">{{ s.summary }}</p>
+    </a>
+  </section>
+}

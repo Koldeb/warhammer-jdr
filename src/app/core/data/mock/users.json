@@ -1,0 +1,7 @@
+[
+  { "id": "paul", "displayName": "Paul", "role": "mj" },
+  { "id": "antoine", "displayName": "Antoine", "role": "joueur" },
+  { "id": "julie", "displayName": "Julie", "role": "joueur" },
+  { "id": "marc", "displayName": "Marc", "role": "joueur" },
+  { "id": "sophie", "displayName": "Sophie", "role": "joueur" }
+]

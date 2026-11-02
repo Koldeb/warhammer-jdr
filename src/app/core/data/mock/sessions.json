@@ -1,0 +1,76 @@
+[
+  {
+    "id": "session-1",
+    "campaignId": "cendres-ubersreik",
+    "number": 1,
+    "title": "Fumée sur les Docks",
+    "playedOn": "2026-09-14",
+    "inGameDate": "Festag 3 Sigmarzeit 2512",
+    "summary": "Réunis par hasard à l'auberge du Pendu Joyeux, les personnages assistent à l'incendie de l'entrepôt de la guilde Brenner. Ils sauvent un docker des flammes et remarquent un homme encapuchonné qui s'enfuit vers le fleuve.",
+    "events": [
+      "Bagarre au Pendu Joyeux contre des bateliers ivres.",
+      "L'entrepôt Brenner prend feu en pleine nuit.",
+      "Sauvetage de Kaspar, docker coincé sous une poutre.",
+      "Lotte aperçoit un symbole à huit branches gravé sur une porte calcinée.",
+      "Poursuite ratée d'un homme encapuchonné jusqu'aux quais."
+    ],
+    "npcs": [
+      { "name": "Grete Hollin", "description": "Tenancière du Pendu Joyeux, bourrue mais honnête.", "attitude": "allie" },
+      { "name": "Kaspar", "description": "Docker sauvé des flammes. Doit une fière chandelle au groupe.", "attitude": "allie" },
+      { "name": "L'homme encapuchonné", "description": "Silhouette aperçue fuyant l'incendie. Boitait de la jambe gauche.", "attitude": "inconnu" }
+    ],
+    "locations": ["Auberge du Pendu Joyeux", "Entrepôt de la guilde Brenner", "Quais du Teufel"],
+    "loot": ["Bourse de 4 pistoles (trouvée sur un batelier)", "Morceau de cape brûlée"],
+    "xpAwarded": 150,
+    "participants": ["johann-weber", "thorek-gromsson", "aelindra-ithilmaer", "lotte-fauxchemin"]
+  },
+  {
+    "id": "session-2",
+    "campaignId": "cendres-ubersreik",
+    "number": 2,
+    "title": "La Guilde ne pardonne pas",
+    "playedOn": "2026-09-28",
+    "inGameDate": "Angestag 5 Sigmarzeit 2512",
+    "summary": "Maître Brenner engage le groupe pour retrouver les responsables. L'enquête mène à un prêteur sur gages, Ulrich Vossberg, qui semble en savoir plus qu'il ne le dit. Une visite nocturne de sa boutique tourne mal.",
+    "events": [
+      "Entretien avec Maître Ottokar Brenner, qui promet 10 couronnes d'or pour des noms.",
+      "Interrogatoire de Kaspar : l'entrepôt contenait des caisses non déclarées.",
+      "Aelindra détecte des résidus de magie autour des décombres.",
+      "Cambriolage de la boutique de Vossberg ; Lotte trouve un registre codé.",
+      "Fuite par les toits après l'arrivée du guet."
+    ],
+    "npcs": [
+      { "name": "Ottokar Brenner", "description": "Maître de guilde, riche et pressé d'étouffer l'affaire.", "attitude": "neutre" },
+      { "name": "Ulrich Vossberg", "description": "Prêteur sur gages nerveux, boite de la jambe gauche.", "attitude": "hostile" },
+      { "name": "Sergent Hanna Kessler", "description": "Sergente du guet, a vu le visage de Johann.", "attitude": "neutre" }
+    ],
+    "locations": ["Maison de la guilde Brenner", "Boutique de Vossberg", "Toits du quartier des Tanneurs"],
+    "loot": ["Registre codé de Vossberg", "Dague ornée d'un œil", "2 couronnes d'or"],
+    "xpAwarded": 175,
+    "participants": ["johann-weber", "thorek-gromsson", "aelindra-ithilmaer", "lotte-fauxchemin"]
+  },
+  {
+    "id": "session-3",
+    "campaignId": "cendres-ubersreik",
+    "number": 3,
+    "title": "Sous la ville",
+    "playedOn": "2026-10-12",
+    "inGameDate": "Bezahltag 7 Sigmarzeit 2512",
+    "summary": "Le registre déchiffré indique un rendez-vous dans les égouts sous le temple de Shallya désaffecté. Le groupe y découvre un autel profane et affronte ses gardiens. Vossberg leur échappe, mais un nom revient sans cesse : « le Corbeau ».",
+    "events": [
+      "Aelindra déchiffre le registre : il s'agit d'un code de marchand tiléen.",
+      "Descente dans les égouts sous l'ancien temple de Shallya.",
+      "Combat contre trois cultistes et une nuée de rats.",
+      "Thorek est grièvement blessé en protégeant Lotte.",
+      "Découverte d'un autel et de lettres signées « le Corbeau »."
+    ],
+    "npcs": [
+      { "name": "Ulrich Vossberg", "description": "S'est enfui par une grille d'égout. Désormais recherché par le groupe.", "attitude": "hostile" },
+      { "name": "Le Corbeau", "description": "Commanditaire mystérieux, signe ses lettres d'une plume noire.", "attitude": "hostile" }
+    ],
+    "locations": ["Temple de Shallya désaffecté", "Égouts d'Ubersreik"],
+    "loot": ["Lettres du Corbeau", "Calice d'argent souillé", "Potion de soin"],
+    "xpAwarded": 200,
+    "participants": ["johann-weber", "thorek-gromsson", "aelindra-ithilmaer", "lotte-fauxchemin"]
+  }
+]

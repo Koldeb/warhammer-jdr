@@ -1,0 +1,19 @@
+<div class="mx-auto max-w-sm">
+  <h1 class="mb-2 font-serif text-3xl text-amber-200">Qui êtes-vous ?</h1>
+  <p class="mb-6 text-sm text-stone-400">Connexion simulée en attendant Supabase.</p>
+
+  <ul class="space-y-2">
+    @for (u of auth.availableUsers; track u.id) {
+      <li>
+        <button
+          type="button"
+          (click)="login(u.id)"
+          class="w-full rounded border border-stone-700 bg-stone-900 p-3 text-left transition hover:border-amber-500"
+        >
+          <span class="text-amber-100">{{ u.displayName }}</span>
+          <span class="ml-2 text-xs text-stone-400">{{ u.role === 'mj' ? 'Maître du Jeu' : 'Joueur' }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+</div>

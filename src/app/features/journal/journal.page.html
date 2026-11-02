@@ -1,0 +1,19 @@
+<h1 class="mb-6 font-serif text-3xl text-amber-200">Journal de campagne</h1>
+
+<ol class="space-y-4">
+  @for (s of sessions.value() ?? []; track s.id) {
+    <li>
+      <a
+        [routerLink]="['/journal', s.id]"
+        class="block rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
+      >
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 class="font-serif text-xl text-amber-100">Séance {{ s.number }} — {{ s.title }}</h2>
+          <span class="text-sm text-stone-400">Jouée le {{ s.playedOn | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <p class="text-sm text-stone-400">{{ s.inGameDate }}</p>
+        <p class="mt-2">{{ s.summary }}</p>
+      </a>
+    </li>
+  }
+</ol>

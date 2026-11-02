@@ -1,8 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
-  {
-    path: '**',
-    renderMode: RenderMode.Prerender
-  }
+  // Le contenu dépend de l'utilisateur connecté (session côté navigateur) : rendu client.
+  { path: '**', renderMode: RenderMode.Client },
 ];

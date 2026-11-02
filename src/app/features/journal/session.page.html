@@ -1,0 +1,61 @@
+<a routerLink="/journal" class="text-sm text-amber-400 hover:underline">← Journal</a>
+
+@if (session.value(); as s) {
+  <h1 class="mt-2 font-serif text-3xl text-amber-200">Séance {{ s.number }} — {{ s.title }}</h1>
+  <p class="text-sm text-stone-400">
+    {{ s.inGameDate }} · jouée le {{ s.playedOn | date: 'dd/MM/yyyy' }} · {{ s.xpAwarded }} XP
+  </p>
+
+  <p class="mt-4 max-w-3xl leading-relaxed">{{ s.summary }}</p>
+
+  @if (gmNotes.value(); as notes) {
+    <aside class="mt-6 rounded border border-red-900 bg-red-950/40 p-4">
+      <h2 class="font-serif text-lg text-red-200">Notes du MJ <span class="text-xs">(privées)</span></h2>
+      <p class="mt-2 whitespace-pre-line">{{ notes.content }}</p>
+    </aside>
+  }
+
+  <div class="mt-8 grid gap-6 md:grid-cols-2">
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Événements</h2>
+      <ol class="list-decimal space-y-1 pl-5">
+        @for (e of s.events; track $index) {
+          <li>{{ e }}</li>
+        }
+      </ol>
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">PNJ rencontrés</h2>
+      <ul class="space-y-2">
+        @for (npc of s.npcs; track npc.name) {
+          <li>
+            <span class="font-semibold text-amber-100">{{ npc.name }}</span>
+            <span class="ml-2 text-xs text-stone-400">({{ attitudeLabels[npc.attitude] }})</span>
+            <p class="text-sm">{{ npc.description }}</p>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Lieux</h2>
+      <ul class="list-disc pl-5">
+        @for (l of s.locations; track l) {
+          <li>{{ l }}</li>
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Butin</h2>
+      <ul class="list-disc pl-5">
+        @for (l of s.loot; track l) {
+          <li>{{ l }}</li>
+        }
+      </ul>
+    </section>
+  </div>
+} @else if (!session.isLoading()) {
+  <p class="mt-4">Séance introuvable.</p>
+}

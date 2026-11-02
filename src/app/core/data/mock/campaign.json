@@ -1,0 +1,13 @@
+{
+  "id": "cendres-ubersreik",
+  "name": "Les Cendres d'Ubersreik",
+  "gameMaster": "Paul",
+  "pitch": "Un incendie ravage l'entrepôt d'une guilde de marchands d'Ubersreik. Dans les décombres, un symbole gravé que personne n'ose nommer. Les personnages, témoins malgré eux, se retrouvent mêlés à une affaire qui dépasse de loin une simple querelle de marchands.",
+  "startedOn": "2026-09-14",
+  "currentLocation": "Ubersreik, quartier des Docks",
+  "party": {
+    "name": "La Compagnie de la Lanterne",
+    "shortTermAmbition": "Découvrir qui a commandité l'incendie de l'entrepôt Brenner.",
+    "longTermAmbition": "Acheter et tenir leur propre auberge à Ubersreik."
+  }
+}

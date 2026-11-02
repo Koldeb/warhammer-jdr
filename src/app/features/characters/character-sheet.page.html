@@ -1,0 +1,271 @@
+<a routerLink="/" class="text-sm text-amber-400 hover:underline">← Groupe</a>
+
+@if (character.value(); as ch) {
+  <header class="mt-2 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="font-serif text-4xl text-amber-200">{{ ch.name }}</h1>
+      @if (canEdit() && !editing()) {
+        <button type="button" class="btn-primary" (click)="editing.set(true)">Modifier la fiche</button>
+      }
+    </div>
+    <p class="text-stone-400">
+      {{ speciesLabels[ch.species] }} · {{ ch.career.class }} · {{ ch.career.name }} —
+      {{ ch.career.title }} (échelon {{ ch.career.level }}) ·
+      Statut {{ tierLabels[ch.career.status.tier] }} {{ ch.career.status.standing }}
+    </p>
+    @if (saveError(); as err) {
+      <p class="mt-2 rounded border border-red-800 bg-red-950/50 p-2 text-sm text-red-200">{{ err }}</p>
+    }
+  </header>
+
+  @if (editing()) {
+    <app-character-editor
+      [character]="ch"
+      [saving]="saving()"
+      (save)="save($event)"
+      (cancel)="editing.set(false)"
+    />
+  } @else {
+
+  <!-- Caractéristiques -->
+  <section class="mb-8 overflow-x-auto">
+    <div class="mb-2 flex flex-wrap items-center gap-2 text-sm text-stone-400">
+      <span>Cliquez sur une valeur pour faire un test.</span>
+      <label class="ml-auto flex items-center gap-2">
+        Difficulté
+        <select class="input" [value]="difficultyIndex()" (change)="difficultyIndex.set(+$any($event.target).value)">
+          @for (d of difficulties; track d.label) {
+            <option [value]="$index">{{ d.label }} ({{ d.modifier >= 0 ? '+' : '' }}{{ d.modifier }})</option>
+          }
+        </select>
+      </label>
+    </div>
+    <table class="w-full min-w-[640px] border-collapse text-center">
+      <thead>
+        <tr class="text-amber-200">
+          <th class="p-1 text-left"></th>
+          @for (c of characteristics; track c.key) {
+            <th class="border border-stone-700 p-1" [title]="c.label">{{ c.abbr }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-1 text-left text-sm text-stone-400">Initiale</td>
+          @for (c of characteristics; track c.key) {
+            <td class="border border-stone-700 p-1">{{ ch.characteristics[c.key].initial }}</td>
+          }
+        </tr>
+        <tr>
+          <td class="p-1 text-left text-sm text-stone-400">Augm.</td>
+          @for (c of characteristics; track c.key) {
+            <td class="border border-stone-700 p-1">{{ ch.characteristics[c.key].advances }}</td>
+          }
+        </tr>
+        <tr class="font-bold text-amber-100">
+          <td class="p-1 text-left text-sm text-stone-400">Actuelle</td>
+          @for (c of characteristics; track c.key) {
+            <td class="border border-stone-700 p-0">
+              <button
+                type="button"
+                class="roll-target w-full p-1"
+                [title]="'Test de ' + c.label"
+                (click)="rollTest(c.label, characteristicValue(ch.characteristics[c.key]), c.key)"
+              >
+                {{ characteristicValue(ch.characteristics[c.key]) }}
+              </button>
+            </td>
+          }
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Points & état -->
+  <section class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+    <div class="stat">
+      <span>Blessures</span>
+      <div class="counter">
+        @if (canEdit()) {
+          <button type="button" aria-label="Retirer une blessure" [disabled]="ch.wounds.current <= 0" (click)="adjust('wounds', -1)">−</button>
+        }
+        {{ ch.wounds.current }} / {{ maxWounds(ch) }}
+        @if (canEdit()) {
+          <button type="button" aria-label="Ajouter une blessure" [disabled]="ch.wounds.current >= maxWounds(ch)" (click)="adjust('wounds', 1)">+</button>
+        }
+      </div>
+    </div>
+    <div class="stat"><span>Destin</span>{{ ch.points.fate }}</div>
+    <div class="stat">
+      <span>Fortune</span>
+      <div class="counter">
+        @if (canEdit()) {
+          <button type="button" aria-label="Dépenser un point de Fortune" [disabled]="ch.points.fortune <= 0" (click)="adjust('fortune', -1)">−</button>
+        }
+        {{ ch.points.fortune }} / {{ ch.points.fate }}
+        @if (canEdit()) {
+          <button type="button" aria-label="Récupérer un point de Fortune" [disabled]="ch.points.fortune >= ch.points.fate" (click)="adjust('fortune', 1)">+</button>
+        }
+      </div>
+    </div>
+    <div class="stat">
+      <span>Résilience</span>
+      <div class="counter">
+        @if (canEdit()) {
+          <button type="button" aria-label="Retirer un point de Résilience" [disabled]="ch.points.resilience <= 0" (click)="adjust('resilience', -1)">−</button>
+        }
+        {{ ch.points.resilience }}
+        @if (canEdit()) {
+          <button type="button" aria-label="Ajouter un point de Résilience" (click)="adjust('resilience', 1)">+</button>
+        }
+      </div>
+    </div>
+    <div class="stat">
+      <span>Détermination</span>
+      <div class="counter">
+        @if (canEdit()) {
+          <button type="button" aria-label="Dépenser un point de Détermination" [disabled]="ch.points.resolve <= 0" (click)="adjust('resolve', -1)">−</button>
+        }
+        {{ ch.points.resolve }} / {{ ch.points.resilience }}
+        @if (canEdit()) {
+          <button type="button" aria-label="Récupérer un point de Détermination" [disabled]="ch.points.resolve >= ch.points.resilience" (click)="adjust('resolve', 1)">+</button>
+        }
+      </div>
+    </div>
+    <div class="stat"><span>Corruption</span>{{ ch.corruption }}</div>
+    <div class="stat"><span>XP dispo.</span>{{ ch.experience.current }}</div>
+    <div class="stat"><span>XP total</span>{{ totalExperience(ch) }}</div>
+  </section>
+
+  <div class="grid gap-8 lg:grid-cols-2">
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Compétences</h2>
+      <table class="w-full text-sm">
+        <thead class="text-left text-stone-400">
+          <tr><th>Nom</th><th>Carac.</th><th class="text-right">Augm.</th><th class="text-right">Total</th></tr>
+        </thead>
+        <tbody>
+          @for (s of ch.skills; track $index) {
+            <tr class="border-t border-stone-800">
+              <td class="py-1">
+                {{ s.name }}@if (s.specialization) { ({{ s.specialization }}) }
+                @if (s.career) { <span class="text-amber-500" title="Compétence de carrière">●</span> }
+              </td>
+              <td class="uppercase text-stone-400">{{ s.characteristic }}</td>
+              <td class="text-right">{{ s.advances }}</td>
+              <td class="text-right font-bold text-amber-100">
+                <button
+                  type="button"
+                  class="roll-target px-1"
+                  [title]="'Test de ' + s.name"
+                  (click)="rollTest(s.name + (s.specialization ? ' (' + s.specialization + ')' : ''), skillValue(ch, s), s.characteristic)"
+                >
+                  {{ skillValue(ch, s) }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Talents</h2>
+      <ul class="space-y-2">
+        @for (t of ch.talents; track t.name) {
+          <li>
+            <span class="font-semibold text-amber-100">{{ t.name }}</span>
+            @if (t.timesTaken > 1) { ×{{ t.timesTaken }} }
+            <p class="text-sm">{{ t.description }}</p>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Armes</h2>
+      <table class="w-full text-sm">
+        <thead class="text-left text-stone-400">
+          <tr><th>Nom</th><th>Groupe</th><th>Allonge/Portée</th><th class="text-right">Dégâts</th></tr>
+        </thead>
+        <tbody>
+          @for (w of ch.weapons; track w.name) {
+            <tr class="border-t border-stone-800">
+              <td class="py-1">
+                {{ w.name }}
+                @if (w.qualities.length) {
+                  <div class="text-xs text-stone-400">{{ w.qualities.join(', ') }}</div>
+                }
+              </td>
+              <td>{{ w.group }}</td>
+              <td>{{ w.reachOrRange }}</td>
+              <td class="text-right font-bold text-amber-100">{{ weaponDamage(ch, w) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <h2 class="mt-6 mb-2 font-serif text-xl text-amber-200">Armures</h2>
+      @for (a of ch.armour; track a.name) {
+        <p class="text-sm">
+          <span class="text-amber-100">{{ a.name }}</span> — PA {{ a.armourPoints }}
+          <span class="text-stone-400">({{ locationList(a.locations) }})</span>
+        </p>
+      } @empty {
+        <p class="text-sm text-stone-400">Aucune.</p>
+      }
+    </section>
+
+    <section>
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Possessions</h2>
+      <ul class="list-disc pl-5 text-sm">
+        @for (t of ch.trappings; track t.name) {
+          <li>{{ t.name }} @if (t.quantity > 1) { ×{{ t.quantity }} }</li>
+        }
+      </ul>
+      <p class="mt-2 text-sm">
+        {{ ch.wealth.crowns }} CO · {{ ch.wealth.shillings }} pa · {{ ch.wealth.pennies }} s
+      </p>
+    </section>
+
+    @if (ch.spells.length) {
+      <section class="lg:col-span-2">
+        <h2 class="mb-2 font-serif text-xl text-amber-200">Sorts</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (sp of ch.spells; track sp.name) {
+            <div class="rounded border border-stone-700 bg-stone-900 p-3 text-sm">
+              <p class="font-semibold text-amber-100">{{ sp.name }} <span class="text-stone-400">— {{ sp.lore }}, NI {{ sp.castingNumber }}</span></p>
+              <p class="text-stone-400">Portée {{ sp.range }} · Cible {{ sp.target }} · Durée {{ sp.duration }}</p>
+              <p class="mt-1">{{ sp.effect }}</p>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="lg:col-span-2">
+      <h2 class="mb-2 font-serif text-xl text-amber-200">Personnage</h2>
+      <p class="text-sm text-stone-400">
+        {{ ch.details.age }} ans · {{ ch.details.height }} · cheveux {{ ch.details.hair }} · yeux {{ ch.details.eyes }}
+      </p>
+      <p class="mt-2">{{ ch.details.appearance }}</p>
+      <p class="mt-2">{{ ch.details.background }}</p>
+      <p class="mt-4"><span class="text-stone-400">Motivation :</span> {{ ch.points.motivation }}</p>
+      <p><span class="text-stone-400">Ambition courte :</span> {{ ch.ambitions.shortTerm }}</p>
+      <p><span class="text-stone-400">Ambition longue :</span> {{ ch.ambitions.longTerm }}</p>
+      @for (p of ch.psychology; track p) {
+        <p class="mt-2 text-red-300">{{ p }}</p>
+      }
+    </section>
+  </div>
+  }
+} @else if (!character.isLoading()) {
+  <p class="mt-4">Personnage introuvable.</p>
+}
+
+<app-roll-log
+  [rolls]="rolls()"
+  [canReroll]="canEdit() && (character.value()?.points?.fortune ?? 0) > 0"
+  (reroll)="reroll($event)"
+  (clear)="rolls.set([])"
+/>

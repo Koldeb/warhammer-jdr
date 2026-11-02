@@ -1,3 +1,48 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+@layer base {
+  body {
+    @apply bg-stone-950 text-stone-200;
+  }
+}
+
+@layer components {
+  .stat {
+    @apply flex flex-col items-center rounded border border-stone-700 bg-stone-900 p-2 text-lg font-bold text-amber-100;
+  }
+  .stat span {
+    @apply text-xs font-normal text-stone-400;
+  }
+}
+
+@layer components {
+  .field {
+    @apply flex flex-col gap-1 text-xs text-stone-400;
+  }
+  .input {
+    @apply rounded border border-stone-700 bg-stone-900 px-2 py-1 text-sm text-stone-100 focus:border-amber-500 focus:outline-none;
+  }
+  .btn {
+    @apply rounded border border-stone-600 px-3 py-1.5 text-sm hover:border-amber-500 disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply rounded bg-amber-700 px-3 py-1.5 text-sm font-semibold text-stone-950 hover:bg-amber-600 disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply rounded px-2 py-1 text-sm text-red-400 hover:bg-red-950;
+  }
+}
+
+@layer components {
+  .roll-target {
+    @apply cursor-pointer rounded transition hover:bg-amber-900/40 hover:text-amber-300;
+  }
+  .counter {
+    @apply flex items-center gap-2;
+  }
+  .counter button {
+    @apply h-6 w-6 rounded border border-stone-600 text-sm leading-none hover:border-amber-500 disabled:opacity-30;
+  }
+}

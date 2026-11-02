@@ -1,0 +1,238 @@
+@let d = draft();
+
+<div class="space-y-8">
+  <!-- Identité & carrière -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Identité & carrière</h2>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <label class="field sm:col-span-2">Nom <input class="input" [(ngModel)]="d.name" /></label>
+      <label class="field">
+        Espèce
+        <select class="input" [(ngModel)]="d.species">
+          @for (s of species; track s[0]) { <option [value]="s[0]">{{ s[1] }}</option> }
+        </select>
+      </label>
+      <label class="field">Classe <input class="input" [(ngModel)]="d.career.class" /></label>
+      <label class="field">Carrière <input class="input" [(ngModel)]="d.career.name" /></label>
+      <label class="field">Titre de l'échelon <input class="input" [(ngModel)]="d.career.title" /></label>
+      <label class="field">
+        Échelon
+        <select class="input" [(ngModel)]="d.career.level">
+          @for (l of levels; track l) { <option [ngValue]="l">{{ l }}</option> }
+        </select>
+      </label>
+      <div class="field">
+        Statut
+        <div class="flex gap-2">
+          <select class="input flex-1" [(ngModel)]="d.career.status.tier">
+            @for (t of tiers; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }
+          </select>
+          <input class="input w-16" type="number" min="0" [(ngModel)]="d.career.status.standing" />
+        </div>
+      </div>
+      <label class="field sm:col-span-2 lg:col-span-4">
+        Carrières précédentes (séparées par des virgules)
+        <input class="input" [value]="d.career.history.join(', ')" (change)="d.career.history = splitList(inputValue($event))" />
+      </label>
+    </div>
+  </section>
+
+  <!-- Caractéristiques -->
+  <section class="overflow-x-auto">
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Caractéristiques</h2>
+    <table class="w-full min-w-[640px] border-collapse text-center">
+      <thead>
+        <tr class="text-amber-200">
+          <th></th>
+          @for (c of characteristics; track c.key) { <th class="p-1" [title]="c.label">{{ c.abbr }}</th> }
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pr-2 text-left text-sm text-stone-400">Initiale</td>
+          @for (c of characteristics; track c.key) {
+            <td class="p-0.5"><input class="input w-full text-center" type="number" min="0" [(ngModel)]="d.characteristics[c.key].initial" (change)="limit()" /></td>
+          }
+        </tr>
+        <tr>
+          <td class="pr-2 text-left text-sm text-stone-400">Augm.</td>
+          @for (c of characteristics; track c.key) {
+            <td class="p-0.5"><input class="input w-full text-center" type="number" min="0" [(ngModel)]="d.characteristics[c.key].advances" (change)="limit()" /></td>
+          }
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Points & état -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Points & état</h2>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+      <label class="field">Blessures (max {{ maxWounds(d) }}) <input class="input" type="number" min="0" [max]="maxWounds(d)" [(ngModel)]="d.wounds.current" (change)="limit()" /></label>
+      <label class="field">Destin <input class="input" type="number" min="0" [(ngModel)]="d.points.fate" (change)="limit()" /></label>
+      <label class="field">Fortune (max {{ d.points.fate }}) <input class="input" type="number" min="0" [max]="d.points.fate" [(ngModel)]="d.points.fortune" (change)="limit()" /></label>
+      <label class="field">Résilience <input class="input" type="number" min="0" [(ngModel)]="d.points.resilience" (change)="limit()" /></label>
+      <label class="field">Détermination (max {{ d.points.resilience }}) <input class="input" type="number" min="0" [max]="d.points.resilience" [(ngModel)]="d.points.resolve" (change)="limit()" /></label>
+      <label class="field">Corruption <input class="input" type="number" min="0" [(ngModel)]="d.corruption" /></label>
+      <label class="field">XP disponible <input class="input" type="number" min="0" [(ngModel)]="d.experience.current" /></label>
+      <label class="field">XP dépensée <input class="input" type="number" min="0" [(ngModel)]="d.experience.spent" /></label>
+      <label class="field sm:col-span-2">Motivation <input class="input" [(ngModel)]="d.points.motivation" /></label>
+    </div>
+  </section>
+
+  <!-- Compétences -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Compétences</h2>
+    <div class="space-y-2">
+      @for (s of d.skills; track $index) {
+        <div class="flex flex-wrap items-center gap-2">
+          <input class="input min-w-40 flex-1" placeholder="Nom" [(ngModel)]="s.name" />
+          <input class="input w-36" placeholder="Spécialisation" [(ngModel)]="s.specialization" />
+          <select class="input w-20" [(ngModel)]="s.characteristic">
+            @for (c of characteristics; track c.key) { <option [value]="c.key">{{ c.abbr }}</option> }
+          </select>
+          <input class="input w-16" type="number" min="0" title="Augmentations" [(ngModel)]="s.advances" />
+          <label class="text-sm"><input type="checkbox" [(ngModel)]="s.advanced" /> Avancée</label>
+          <label class="text-sm"><input type="checkbox" [(ngModel)]="s.career" /> Carrière</label>
+          <button type="button" class="btn-danger" (click)="remove(d.skills, $index)">✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addSkill()">+ Compétence</button>
+  </section>
+
+  <!-- Talents -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Talents</h2>
+    <div class="space-y-2">
+      @for (t of d.talents; track $index) {
+        <div class="flex flex-wrap items-center gap-2">
+          <input class="input w-48" placeholder="Nom" [(ngModel)]="t.name" />
+          <input class="input w-16" type="number" min="1" title="Nombre de fois" [(ngModel)]="t.timesTaken" />
+          <input class="input min-w-48 flex-1" placeholder="Description" [(ngModel)]="t.description" />
+          <button type="button" class="btn-danger" (click)="remove(d.talents, $index)">✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addTalent()">+ Talent</button>
+  </section>
+
+  <!-- Armes -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Armes</h2>
+    <div class="space-y-2">
+      @for (w of d.weapons; track $index) {
+        <div class="flex flex-wrap items-center gap-2">
+          <input class="input w-40" placeholder="Nom" [(ngModel)]="w.name" />
+          <input class="input w-28" placeholder="Groupe" [(ngModel)]="w.group" />
+          <input class="input w-28" placeholder="Allonge/Portée" [(ngModel)]="w.reachOrRange" />
+          <label class="text-sm"><input type="checkbox" [(ngModel)]="w.damage.usesStrengthBonus" /> +BF</label>
+          <input class="input w-16" type="number" title="Modificateur de dégâts" [(ngModel)]="w.damage.modifier" />
+          <input class="input w-16" type="number" min="0" title="Encombrement" [(ngModel)]="w.encumbrance" />
+          <input class="input min-w-40 flex-1" placeholder="Atouts / défauts" [value]="w.qualities.join(', ')" (change)="w.qualities = splitList(inputValue($event))" />
+          <button type="button" class="btn-danger" (click)="remove(d.weapons, $index)">✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addWeapon()">+ Arme</button>
+  </section>
+
+  <!-- Armures -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Armures</h2>
+    <div class="space-y-3">
+      @for (a of d.armour; track $index) {
+        <div class="rounded border border-stone-800 p-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <input class="input w-48" placeholder="Nom" [(ngModel)]="a.name" />
+            <label class="text-sm">PA <input class="input w-16" type="number" min="0" [(ngModel)]="a.armourPoints" /></label>
+            <label class="text-sm">Enc. <input class="input w-16" type="number" min="0" [(ngModel)]="a.encumbrance" /></label>
+            <input class="input min-w-40 flex-1" placeholder="Atouts / défauts" [value]="a.qualities.join(', ')" (change)="a.qualities = splitList(inputValue($event))" />
+            <button type="button" class="btn-danger" (click)="remove(d.armour, $index)">✕</button>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-3 text-sm">
+            @for (loc of hitLocations; track loc[0]) {
+              <label>
+                <input type="checkbox" [checked]="a.locations.includes(loc[0])" (change)="toggleLocation(a.locations, loc[0])" />
+                {{ loc[1] }}
+              </label>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addArmour()">+ Armure</button>
+  </section>
+
+  <!-- Possessions & richesse -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Possessions</h2>
+    <div class="space-y-2">
+      @for (t of d.trappings; track $index) {
+        <div class="flex flex-wrap items-center gap-2">
+          <input class="input min-w-48 flex-1" placeholder="Nom" [(ngModel)]="t.name" />
+          <label class="text-sm">Qté <input class="input w-16" type="number" min="0" [(ngModel)]="t.quantity" /></label>
+          <label class="text-sm">Enc. <input class="input w-16" type="number" min="0" [(ngModel)]="t.encumbrance" /></label>
+          <button type="button" class="btn-danger" (click)="remove(d.trappings, $index)">✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addTrapping()">+ Possession</button>
+
+    <div class="mt-4 flex flex-wrap gap-3">
+      <label class="field">Couronnes d'or <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.crowns" /></label>
+      <label class="field">Pistoles d'argent <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.shillings" /></label>
+      <label class="field">Sous de cuivre <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.pennies" /></label>
+    </div>
+  </section>
+
+  <!-- Sorts -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Sorts</h2>
+    <div class="space-y-3">
+      @for (sp of d.spells; track $index) {
+        <div class="grid gap-2 rounded border border-stone-800 p-2 sm:grid-cols-4">
+          <input class="input" placeholder="Nom" [(ngModel)]="sp.name" />
+          <input class="input" placeholder="Domaine" [(ngModel)]="sp.lore" />
+          <label class="text-sm">NI <input class="input w-16" type="number" min="0" [(ngModel)]="sp.castingNumber" /></label>
+          <button type="button" class="btn-danger justify-self-end" (click)="remove(d.spells, $index)">✕</button>
+          <input class="input" placeholder="Portée" [(ngModel)]="sp.range" />
+          <input class="input" placeholder="Cible" [(ngModel)]="sp.target" />
+          <input class="input sm:col-span-2" placeholder="Durée" [(ngModel)]="sp.duration" />
+          <textarea class="input sm:col-span-4" rows="2" placeholder="Effet" [(ngModel)]="sp.effect"></textarea>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn mt-2" (click)="addSpell()">+ Sort</button>
+  </section>
+
+  <!-- Background -->
+  <section>
+    <h2 class="mb-3 font-serif text-xl text-amber-200">Personnage</h2>
+    <div class="grid gap-3 sm:grid-cols-4">
+      <label class="field">Âge <input class="input" type="number" min="0" [(ngModel)]="d.details.age" /></label>
+      <label class="field">Taille <input class="input" [(ngModel)]="d.details.height" /></label>
+      <label class="field">Cheveux <input class="input" [(ngModel)]="d.details.hair" /></label>
+      <label class="field">Yeux <input class="input" [(ngModel)]="d.details.eyes" /></label>
+      <label class="field sm:col-span-4">Apparence <textarea class="input" rows="2" [(ngModel)]="d.details.appearance"></textarea></label>
+      <label class="field sm:col-span-4">Historique <textarea class="input" rows="4" [(ngModel)]="d.details.background"></textarea></label>
+      <label class="field sm:col-span-2">Ambition courte <input class="input" [(ngModel)]="d.ambitions.shortTerm" /></label>
+      <label class="field sm:col-span-2">Ambition longue <input class="input" [(ngModel)]="d.ambitions.longTerm" /></label>
+      <label class="field sm:col-span-2">
+        Psychologie (une par ligne)
+        <textarea class="input" rows="3" [value]="d.psychology.join('\n')" (change)="d.psychology = splitList(inputValue($event), '\n')"></textarea>
+      </label>
+      <label class="field sm:col-span-2">
+        Mutations (une par ligne)
+        <textarea class="input" rows="3" [value]="d.mutations.join('\n')" (change)="d.mutations = splitList(inputValue($event), '\n')"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <div class="sticky bottom-0 flex justify-end gap-3 border-t border-stone-800 bg-stone-950 py-3">
+    <button type="button" class="btn" (click)="cancel.emit()" [disabled]="saving()">Annuler</button>
+    <button type="button" class="btn-primary" (click)="submit()" [disabled]="saving()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,297 @@
+[
+  {
+    "id": "johann-weber",
+    "campaignId": "cendres-ubersreik",
+    "playerId": "antoine",
+    "name": "Johann Weber",
+    "species": "humain",
+    "career": {
+      "class": "Guerriers",
+      "name": "Soldat",
+      "level": 1,
+      "title": "Recrue",
+      "status": { "tier": "argent", "standing": 1 },
+      "history": []
+    },
+    "details": {
+      "age": 24,
+      "height": "1m80",
+      "hair": "Châtain",
+      "eyes": "Gris",
+      "appearance": "Carrure solide, cicatrice sur l'arcade gauche, uniforme du Reikland rapiécé.",
+      "background": "Fils de forgeron d'Ubersreik, enrôlé pour fuir les dettes de son père. Déserteur malgré lui après la débâcle de sa compagnie."
+    },
+    "characteristics": {
+      "cc": { "initial": 35, "advances": 5 },
+      "ct": { "initial": 30, "advances": 0 },
+      "f": { "initial": 33, "advances": 0 },
+      "e": { "initial": 34, "advances": 5 },
+      "i": { "initial": 28, "advances": 0 },
+      "ag": { "initial": 31, "advances": 0 },
+      "dex": { "initial": 27, "advances": 0 },
+      "int": { "initial": 25, "advances": 0 },
+      "fm": { "initial": 29, "advances": 5 },
+      "soc": { "initial": 26, "advances": 0 }
+    },
+    "points": { "fate": 2, "fortune": 2, "resilience": 1, "resolve": 1, "motivation": "Protéger les faibles" },
+    "wounds": { "current": 9 },
+    "experience": { "current": 125, "spent": 450 },
+    "corruption": 0,
+    "mutations": [],
+    "psychology": [],
+    "ambitions": {
+      "shortTerm": "Effacer son nom du registre des déserteurs.",
+      "longTerm": "Devenir sergent d'une compagnie respectée."
+    },
+    "skills": [
+      { "name": "Athlétisme", "characteristic": "ag", "advances": 5, "advanced": false, "career": true },
+      { "name": "Calme", "characteristic": "fm", "advances": 5, "advanced": false, "career": true },
+      { "name": "Corps à corps", "specialization": "Base", "characteristic": "cc", "advances": 10, "advanced": false, "career": true },
+      { "name": "Esquive", "characteristic": "ag", "advances": 5, "advanced": false, "career": true },
+      { "name": "Escalade", "characteristic": "f", "advances": 3, "advanced": false, "career": true },
+      { "name": "Résistance", "characteristic": "e", "advances": 5, "advanced": false, "career": true },
+      { "name": "Résistance à l'alcool", "characteristic": "e", "advances": 3, "advanced": false, "career": false },
+      { "name": "Langue", "specialization": "Bataille", "characteristic": "int", "advances": 5, "advanced": true, "career": true }
+    ],
+    "talents": [
+      { "name": "Guerrier né", "timesTaken": 1, "description": "+5 en Capacité de Combat." },
+      { "name": "Dos solide", "timesTaken": 1, "description": "Augmente l'encombrement supportable." }
+    ],
+    "weapons": [
+      { "name": "Épée", "group": "Base", "encumbrance": 1, "reachOrRange": "Moyenne", "damage": { "usesStrengthBonus": true, "modifier": 4 }, "qualities": [] },
+      { "name": "Bouclier", "group": "Base", "encumbrance": 1, "reachOrRange": "Très courte", "damage": { "usesStrengthBonus": true, "modifier": 2 }, "qualities": ["Bouclier 2", "Défensive", "Inoffensive"] }
+    ],
+    "armour": [
+      { "name": "Gilet de mailles", "locations": ["corps"], "encumbrance": 2, "armourPoints": 2, "qualities": ["Flexible"] },
+      { "name": "Casque ouvert", "locations": ["tete"], "encumbrance": 1, "armourPoints": 2, "qualities": [] }
+    ],
+    "trappings": [
+      { "name": "Uniforme", "quantity": 1, "encumbrance": 1 },
+      { "name": "Sac à dos", "quantity": 1, "encumbrance": 0 },
+      { "name": "Rations (jours)", "quantity": 3, "encumbrance": 0 }
+    ],
+    "spells": [],
+    "wealth": { "crowns": 1, "shillings": 6, "pennies": 8 }
+  },
+  {
+    "id": "thorek-gromsson",
+    "campaignId": "cendres-ubersreik",
+    "playerId": "julie",
+    "name": "Thorek Gromsson",
+    "species": "nain",
+    "career": {
+      "class": "Guerriers",
+      "name": "Tueur",
+      "level": 1,
+      "title": "Tueur de trolls",
+      "status": { "tier": "bronze", "standing": 2 },
+      "history": ["Mineur"]
+    },
+    "details": {
+      "age": 87,
+      "height": "1m40",
+      "hair": "Crête teinte en orange",
+      "eyes": "Bruns",
+      "appearance": "Torse couvert de tatouages, crête flamboyante, une hache plus grande que lui.",
+      "background": "Ancien mineur de Karak Azgaraz. A survécu à l'effondrement d'une galerie où toute son équipe a péri ; il cherche désormais une mort glorieuse."
+    },
+    "characteristics": {
+      "cc": { "initial": 42, "advances": 5 },
+      "ct": { "initial": 24, "advances": 0 },
+      "f": { "initial": 35, "advances": 0 },
+      "e": { "initial": 44, "advances": 5 },
+      "i": { "initial": 26, "advances": 0 },
+      "ag": { "initial": 22, "advances": 5 },
+      "dex": { "initial": 30, "advances": 0 },
+      "int": { "initial": 27, "advances": 0 },
+      "fm": { "initial": 41, "advances": 0 },
+      "soc": { "initial": 18, "advances": 0 }
+    },
+    "points": { "fate": 0, "fortune": 0, "resilience": 3, "resolve": 3, "motivation": "Laver sa honte" },
+    "wounds": { "current": 4 },
+    "experience": { "current": 75, "spent": 500 },
+    "corruption": 0,
+    "mutations": [],
+    "psychology": ["Serment de Tueur : ne peut fuir un combat ni porter d'armure."],
+    "ambitions": {
+      "shortTerm": "Abattre un monstre digne de ce nom.",
+      "longTerm": "Mourir face à un adversaire légendaire."
+    },
+    "skills": [
+      { "name": "Calme", "characteristic": "fm", "advances": 5, "advanced": false, "career": true },
+      { "name": "Corps à corps", "specialization": "Base", "characteristic": "cc", "advances": 5, "advanced": false, "career": true },
+      { "name": "Corps à corps", "specialization": "Deux mains", "characteristic": "cc", "advances": 10, "advanced": false, "career": true },
+      { "name": "Esquive", "characteristic": "ag", "advances": 5, "advanced": false, "career": true },
+      { "name": "Intimidation", "characteristic": "f", "advances": 5, "advanced": false, "career": true },
+      { "name": "Résistance", "characteristic": "e", "advances": 5, "advanced": false, "career": true },
+      { "name": "Résistance à l'alcool", "characteristic": "e", "advances": 10, "advanced": false, "career": true },
+      { "name": "Métier", "specialization": "Mineur", "characteristic": "dex", "advances": 5, "advanced": true, "career": false }
+    ],
+    "talents": [
+      { "name": "Frénésie", "timesTaken": 1, "description": "Peut entrer en frénésie au prix d'un test de Force Mentale." },
+      { "name": "Tueur", "timesTaken": 1, "description": "Dégâts accrus contre les créatures plus grandes." },
+      { "name": "Résistance à la magie", "timesTaken": 1, "description": "Les sorts qui le ciblent sont plus difficiles à lancer." },
+      { "name": "Vision nocturne", "timesTaken": 1, "description": "Voit dans la pénombre." }
+    ],
+    "weapons": [
+      { "name": "Hache à deux mains", "group": "Deux mains", "encumbrance": 3, "reachOrRange": "Longue", "damage": { "usesStrengthBonus": true, "modifier": 5 }, "qualities": ["Dévastatrice", "Percutante", "Lente"] }
+    ],
+    "armour": [],
+    "trappings": [
+      { "name": "Gourde d'alcool nain", "quantity": 1, "encumbrance": 0 },
+      { "name": "Pioche usée", "quantity": 1, "encumbrance": 1 }
+    ],
+    "spells": [],
+    "wealth": { "crowns": 0, "shillings": 3, "pennies": 2 }
+  },
+  {
+    "id": "aelindra-ithilmaer",
+    "campaignId": "cendres-ubersreik",
+    "playerId": "marc",
+    "name": "Aelindra Ithilmaer",
+    "species": "haut-elfe",
+    "career": {
+      "class": "Lettrés",
+      "name": "Sorcier",
+      "level": 1,
+      "title": "Apprenti sorcier",
+      "status": { "tier": "argent", "standing": 3 },
+      "history": []
+    },
+    "details": {
+      "age": 142,
+      "height": "1m85",
+      "hair": "Argentés",
+      "eyes": "Violets",
+      "appearance": "Silhouette élancée, robe bleu nuit brodée d'étoiles, regard distant.",
+      "background": "Envoyée d'Ulthuan pour étudier les Collèges de Magie impériaux, elle méprise poliment ces humains si pressés."
+    },
+    "characteristics": {
+      "cc": { "initial": 32, "advances": 0 },
+      "ct": { "initial": 38, "advances": 0 },
+      "f": { "initial": 26, "advances": 0 },
+      "e": { "initial": 28, "advances": 0 },
+      "i": { "initial": 45, "advances": 0 },
+      "ag": { "initial": 41, "advances": 0 },
+      "dex": { "initial": 37, "advances": 5 },
+      "int": { "initial": 48, "advances": 5 },
+      "fm": { "initial": 44, "advances": 5 },
+      "soc": { "initial": 35, "advances": 0 }
+    },
+    "points": { "fate": 1, "fortune": 1, "resilience": 2, "resolve": 2, "motivation": "Le savoir" },
+    "wounds": { "current": 10 },
+    "experience": { "current": 200, "spent": 375 },
+    "corruption": 1,
+    "mutations": [],
+    "psychology": [],
+    "ambitions": {
+      "shortTerm": "Identifier la nature de la magie relevée dans l'entrepôt.",
+      "longTerm": "Être admise au Collège Céleste d'Altdorf."
+    },
+    "skills": [
+      { "name": "Calme", "characteristic": "fm", "advances": 5, "advanced": false, "career": true },
+      { "name": "Esquive", "characteristic": "ag", "advances": 3, "advanced": false, "career": true },
+      { "name": "Intuition", "characteristic": "i", "advances": 5, "advanced": false, "career": true },
+      { "name": "Perception", "characteristic": "i", "advances": 5, "advanced": false, "career": true },
+      { "name": "Focalisation", "specialization": "Azyr", "characteristic": "fm", "advances": 10, "advanced": true, "career": true },
+      { "name": "Langue", "specialization": "Magick", "characteristic": "int", "advances": 10, "advanced": true, "career": true },
+      { "name": "Savoir", "specialization": "Magie", "characteristic": "int", "advances": 5, "advanced": true, "career": true }
+    ],
+    "talents": [
+      { "name": "Magie mineure", "timesTaken": 1, "description": "Peut lancer les sorts de Magie mineure." },
+      { "name": "Seconde vue", "timesTaken": 1, "description": "Perçoit les Vents de Magie." },
+      { "name": "Vision nocturne", "timesTaken": 1, "description": "Voit dans la pénombre." },
+      { "name": "Sens aiguisé (Vue)", "timesTaken": 1, "description": "Bonus aux tests de Perception visuels." }
+    ],
+    "weapons": [
+      { "name": "Bâton", "group": "Bâton", "encumbrance": 2, "reachOrRange": "Longue", "damage": { "usesStrengthBonus": true, "modifier": 4 }, "qualities": ["Défensive", "Percutante"] }
+    ],
+    "armour": [],
+    "trappings": [
+      { "name": "Grimoire", "quantity": 1, "encumbrance": 1 },
+      { "name": "Plume et encre", "quantity": 1, "encumbrance": 0 },
+      { "name": "Robe de sorcier", "quantity": 1, "encumbrance": 1 }
+    ],
+    "spells": [
+      { "name": "Lumière", "lore": "Magie mineure", "castingNumber": 0, "range": "Contact", "target": "Spécial", "duration": "BFM heures", "effect": "Crée une lumière équivalente à une torche." },
+      { "name": "Fléchette", "lore": "Magie mineure", "castingNumber": 0, "range": "BFM mètres", "target": "1", "duration": "Instantanée", "effect": "Projectile magique infligeant +0 dégâts (projectile magique)." },
+      { "name": "Sons", "lore": "Magie mineure", "castingNumber": 0, "range": "BFM × 10 mètres", "target": "Spécial", "duration": "BFM rounds", "effect": "Produit des bruits sans source apparente." }
+    ],
+    "wealth": { "crowns": 3, "shillings": 12, "pennies": 0 }
+  },
+  {
+    "id": "lotte-fauxchemin",
+    "campaignId": "cendres-ubersreik",
+    "playerId": "sophie",
+    "name": "Lotte Fauxchemin",
+    "species": "halfling",
+    "career": {
+      "class": "Roublards",
+      "name": "Voleur",
+      "level": 1,
+      "title": "Chapardeur",
+      "status": { "tier": "bronze", "standing": 1 },
+      "history": []
+    },
+    "details": {
+      "age": 31,
+      "height": "1m05",
+      "hair": "Bouclés, roux",
+      "eyes": "Verts",
+      "appearance": "Petite, souriante, des poches partout et toujours quelque chose à grignoter.",
+      "background": "Née au Moot, venue à Ubersreik avec une caravane de marchands qu'elle a soulagée de quelques bourses."
+    },
+    "characteristics": {
+      "cc": { "initial": 24, "advances": 0 },
+      "ct": { "initial": 36, "advances": 0 },
+      "f": { "initial": 16, "advances": 0 },
+      "e": { "initial": 27, "advances": 0 },
+      "i": { "initial": 38, "advances": 0 },
+      "ag": { "initial": 44, "advances": 5 },
+      "dex": { "initial": 41, "advances": 5 },
+      "int": { "initial": 33, "advances": 0 },
+      "fm": { "initial": 35, "advances": 5 },
+      "soc": { "initial": 39, "advances": 0 }
+    },
+    "points": { "fate": 2, "fortune": 2, "resilience": 2, "resolve": 2, "motivation": "Le confort" },
+    "wounds": { "current": 6 },
+    "experience": { "current": 100, "spent": 475 },
+    "corruption": 0,
+    "mutations": [],
+    "psychology": [],
+    "ambitions": {
+      "shortTerm": "Revendre la dague ornée d'un œil à bon prix.",
+      "longTerm": "Ouvrir la meilleure cuisine d'Ubersreik."
+    },
+    "skills": [
+      { "name": "Athlétisme", "characteristic": "ag", "advances": 5, "advanced": false, "career": true },
+      { "name": "Discrétion", "specialization": "Urbaine", "characteristic": "ag", "advances": 10, "advanced": false, "career": true },
+      { "name": "Escalade", "characteristic": "f", "advances": 5, "advanced": false, "career": true },
+      { "name": "Esquive", "characteristic": "ag", "advances": 5, "advanced": false, "career": true },
+      { "name": "Perception", "characteristic": "i", "advances": 5, "advanced": false, "career": true },
+      { "name": "Ragot", "characteristic": "soc", "advances": 5, "advanced": false, "career": false },
+      { "name": "Crochetage", "characteristic": "dex", "advances": 5, "advanced": true, "career": true },
+      { "name": "Escamotage", "characteristic": "dex", "advances": 5, "advanced": true, "career": true }
+    ],
+    "talents": [
+      { "name": "Résistance au Chaos", "timesTaken": 1, "description": "Bonus aux tests contre la corruption." },
+      { "name": "Petit", "timesTaken": 1, "description": "Taille Petite." },
+      { "name": "Vision nocturne", "timesTaken": 1, "description": "Voit dans la pénombre." },
+      { "name": "Chat de gouttière", "timesTaken": 1, "description": "Bonus de Discrétion en milieu urbain." }
+    ],
+    "weapons": [
+      { "name": "Dague", "group": "Base", "encumbrance": 0, "reachOrRange": "Très courte", "damage": { "usesStrengthBonus": true, "modifier": 2 }, "qualities": [] },
+      { "name": "Fronde", "group": "Fronde", "encumbrance": 0, "reachOrRange": "60", "damage": { "usesStrengthBonus": false, "modifier": 6 }, "qualities": [] }
+    ],
+    "armour": [
+      { "name": "Veste de cuir", "locations": ["corps", "bras-gauche", "bras-droit"], "encumbrance": 1, "armourPoints": 1, "qualities": [] }
+    ],
+    "trappings": [
+      { "name": "Crochets", "quantity": 1, "encumbrance": 0 },
+      { "name": "Dague ornée d'un œil", "quantity": 1, "encumbrance": 0 },
+      { "name": "Pâtés en croûte", "quantity": 4, "encumbrance": 0 }
+    ],
+    "spells": [],
+    "wealth": { "crowns": 2, "shillings": 4, "pennies": 11 }
+  }
+]
