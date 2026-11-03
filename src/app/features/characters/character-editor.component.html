@@ -1,238 +1,258 @@
 @let d = draft();
 
-<div class="space-y-8">
-  <!-- Identité & carrière -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Identité & carrière</h2>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <label class="field sm:col-span-2">Nom <input class="input" [(ngModel)]="d.name" /></label>
-      <label class="field">
-        Espèce
-        <select class="input" [(ngModel)]="d.species">
-          @for (s of species; track s[0]) { <option [value]="s[0]">{{ s[1] }}</option> }
-        </select>
-      </label>
-      <label class="field">Classe <input class="input" [(ngModel)]="d.career.class" /></label>
-      <label class="field">Carrière <input class="input" [(ngModel)]="d.career.name" /></label>
-      <label class="field">Titre de l'échelon <input class="input" [(ngModel)]="d.career.title" /></label>
-      <label class="field">
-        Échelon
-        <select class="input" [(ngModel)]="d.career.level">
-          @for (l of levels; track l) { <option [ngValue]="l">{{ l }}</option> }
-        </select>
-      </label>
-      <div class="field">
-        Statut
+<div class="dense-form">
+  <mat-accordion multi displayMode="flat" class="flex flex-col gap-3">
+    <!-- Identité & carrière -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">badge</mat-icon> Identité & carrière</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <mat-form-field class="sm:col-span-2"><mat-label>Nom</mat-label><input matInput [(ngModel)]="d.name" /></mat-form-field>
+        <mat-form-field>
+          <mat-label>Espèce</mat-label>
+          <mat-select [(ngModel)]="d.species">
+            @for (s of species; track s[0]) { <mat-option [value]="s[0]">{{ s[1] }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field><mat-label>Classe</mat-label><input matInput [(ngModel)]="d.career.class" /></mat-form-field>
+        <mat-form-field><mat-label>Carrière</mat-label><input matInput [(ngModel)]="d.career.name" /></mat-form-field>
+        <mat-form-field><mat-label>Titre de l'échelon</mat-label><input matInput [(ngModel)]="d.career.title" /></mat-form-field>
+        <mat-form-field>
+          <mat-label>Échelon</mat-label>
+          <mat-select [(ngModel)]="d.career.level">
+            @for (l of levels; track l) { <mat-option [value]="l">{{ l }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
         <div class="flex gap-2">
-          <select class="input flex-1" [(ngModel)]="d.career.status.tier">
-            @for (t of tiers; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }
-          </select>
-          <input class="input w-16" type="number" min="0" [(ngModel)]="d.career.status.standing" />
+          <mat-form-field class="min-w-0 flex-1">
+            <mat-label>Statut</mat-label>
+            <mat-select [(ngModel)]="d.career.status.tier">
+              @for (t of tiers; track t[0]) { <mat-option [value]="t[0]">{{ t[1] }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="w-20"><mat-label>Rang</mat-label><input matInput type="number" min="0" [(ngModel)]="d.career.status.standing" /></mat-form-field>
         </div>
+        <mat-form-field class="sm:col-span-2 lg:col-span-4">
+          <mat-label>Carrières précédentes</mat-label>
+          <input matInput [value]="d.career.history.join(', ')" (change)="d.career.history = splitList(inputValue($event))" />
+          <mat-hint>Séparées par des virgules</mat-hint>
+        </mat-form-field>
       </div>
-      <label class="field sm:col-span-2 lg:col-span-4">
-        Carrières précédentes (séparées par des virgules)
-        <input class="input" [value]="d.career.history.join(', ')" (change)="d.career.history = splitList(inputValue($event))" />
-      </label>
-    </div>
-  </section>
+    </mat-expansion-panel>
 
-  <!-- Caractéristiques -->
-  <section class="overflow-x-auto">
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Caractéristiques</h2>
-    <table class="w-full min-w-[640px] border-collapse text-center">
-      <thead>
-        <tr class="text-amber-200">
-          <th></th>
-          @for (c of characteristics; track c.key) { <th class="p-1" [title]="c.label">{{ c.abbr }}</th> }
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="pr-2 text-left text-sm text-stone-400">Initiale</td>
-          @for (c of characteristics; track c.key) {
-            <td class="p-0.5"><input class="input w-full text-center" type="number" min="0" [(ngModel)]="d.characteristics[c.key].initial" (change)="limit()" /></td>
-          }
-        </tr>
-        <tr>
-          <td class="pr-2 text-left text-sm text-stone-400">Augm.</td>
-          @for (c of characteristics; track c.key) {
-            <td class="p-0.5"><input class="input w-full text-center" type="number" min="0" [(ngModel)]="d.characteristics[c.key].advances" (change)="limit()" /></td>
-          }
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- Points & état -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Points & état</h2>
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-      <label class="field">Blessures (max {{ maxWounds(d) }}) <input class="input" type="number" min="0" [max]="maxWounds(d)" [(ngModel)]="d.wounds.current" (change)="limit()" /></label>
-      <label class="field">Destin <input class="input" type="number" min="0" [(ngModel)]="d.points.fate" (change)="limit()" /></label>
-      <label class="field">Fortune (max {{ d.points.fate }}) <input class="input" type="number" min="0" [max]="d.points.fate" [(ngModel)]="d.points.fortune" (change)="limit()" /></label>
-      <label class="field">Résilience <input class="input" type="number" min="0" [(ngModel)]="d.points.resilience" (change)="limit()" /></label>
-      <label class="field">Détermination (max {{ d.points.resilience }}) <input class="input" type="number" min="0" [max]="d.points.resilience" [(ngModel)]="d.points.resolve" (change)="limit()" /></label>
-      <label class="field">Corruption <input class="input" type="number" min="0" [(ngModel)]="d.corruption" /></label>
-      <label class="field">XP disponible <input class="input" type="number" min="0" [(ngModel)]="d.experience.current" /></label>
-      <label class="field">XP dépensée <input class="input" type="number" min="0" [(ngModel)]="d.experience.spent" /></label>
-      <label class="field sm:col-span-2">Motivation <input class="input" [(ngModel)]="d.points.motivation" /></label>
-    </div>
-  </section>
-
-  <!-- Compétences -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Compétences</h2>
-    <div class="space-y-2">
-      @for (s of d.skills; track $index) {
-        <div class="flex flex-wrap items-center gap-2">
-          <input class="input min-w-40 flex-1" placeholder="Nom" [(ngModel)]="s.name" />
-          <input class="input w-36" placeholder="Spécialisation" [(ngModel)]="s.specialization" />
-          <select class="input w-20" [(ngModel)]="s.characteristic">
-            @for (c of characteristics; track c.key) { <option [value]="c.key">{{ c.abbr }}</option> }
-          </select>
-          <input class="input w-16" type="number" min="0" title="Augmentations" [(ngModel)]="s.advances" />
-          <label class="text-sm"><input type="checkbox" [(ngModel)]="s.advanced" /> Avancée</label>
-          <label class="text-sm"><input type="checkbox" [(ngModel)]="s.career" /> Carrière</label>
-          <button type="button" class="btn-danger" (click)="remove(d.skills, $index)">✕</button>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addSkill()">+ Compétence</button>
-  </section>
-
-  <!-- Talents -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Talents</h2>
-    <div class="space-y-2">
-      @for (t of d.talents; track $index) {
-        <div class="flex flex-wrap items-center gap-2">
-          <input class="input w-48" placeholder="Nom" [(ngModel)]="t.name" />
-          <input class="input w-16" type="number" min="1" title="Nombre de fois" [(ngModel)]="t.timesTaken" />
-          <input class="input min-w-48 flex-1" placeholder="Description" [(ngModel)]="t.description" />
-          <button type="button" class="btn-danger" (click)="remove(d.talents, $index)">✕</button>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addTalent()">+ Talent</button>
-  </section>
-
-  <!-- Armes -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Armes</h2>
-    <div class="space-y-2">
-      @for (w of d.weapons; track $index) {
-        <div class="flex flex-wrap items-center gap-2">
-          <input class="input w-40" placeholder="Nom" [(ngModel)]="w.name" />
-          <input class="input w-28" placeholder="Groupe" [(ngModel)]="w.group" />
-          <input class="input w-28" placeholder="Allonge/Portée" [(ngModel)]="w.reachOrRange" />
-          <label class="text-sm"><input type="checkbox" [(ngModel)]="w.damage.usesStrengthBonus" /> +BF</label>
-          <input class="input w-16" type="number" title="Modificateur de dégâts" [(ngModel)]="w.damage.modifier" />
-          <input class="input w-16" type="number" min="0" title="Encombrement" [(ngModel)]="w.encumbrance" />
-          <input class="input min-w-40 flex-1" placeholder="Atouts / défauts" [value]="w.qualities.join(', ')" (change)="w.qualities = splitList(inputValue($event))" />
-          <button type="button" class="btn-danger" (click)="remove(d.weapons, $index)">✕</button>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addWeapon()">+ Arme</button>
-  </section>
-
-  <!-- Armures -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Armures</h2>
-    <div class="space-y-3">
-      @for (a of d.armour; track $index) {
-        <div class="rounded border border-stone-800 p-2">
-          <div class="flex flex-wrap items-center gap-2">
-            <input class="input w-48" placeholder="Nom" [(ngModel)]="a.name" />
-            <label class="text-sm">PA <input class="input w-16" type="number" min="0" [(ngModel)]="a.armourPoints" /></label>
-            <label class="text-sm">Enc. <input class="input w-16" type="number" min="0" [(ngModel)]="a.encumbrance" /></label>
-            <input class="input min-w-40 flex-1" placeholder="Atouts / défauts" [value]="a.qualities.join(', ')" (change)="a.qualities = splitList(inputValue($event))" />
-            <button type="button" class="btn-danger" (click)="remove(d.armour, $index)">✕</button>
+    <!-- Caractéristiques -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">casino</mat-icon> Caractéristiques</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        @for (c of characteristics; track c.key) {
+          <div class="edit-row !p-2">
+            <div class="mb-2 text-center font-display text-sm font-semibold text-primary" [title]="c.label">{{ c.abbr }}</div>
+            <div class="flex gap-1">
+              <mat-form-field class="min-w-0 flex-1"><mat-label>Init.</mat-label><input matInput type="number" min="0" [(ngModel)]="d.characteristics[c.key].initial" (change)="limit()" /></mat-form-field>
+              <mat-form-field class="min-w-0 flex-1"><mat-label>Aug.</mat-label><input matInput type="number" min="0" [(ngModel)]="d.characteristics[c.key].advances" (change)="limit()" /></mat-form-field>
+            </div>
           </div>
-          <div class="mt-2 flex flex-wrap gap-3 text-sm">
-            @for (loc of hitLocations; track loc[0]) {
-              <label>
-                <input type="checkbox" [checked]="a.locations.includes(loc[0])" (change)="toggleLocation(a.locations, loc[0])" />
-                {{ loc[1] }}
-              </label>
-            }
+        }
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Points & état -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">favorite</mat-icon> Points & état</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <mat-form-field><mat-label>Blessures (max {{ maxWounds(d) }})</mat-label><input matInput type="number" min="0" [max]="maxWounds(d)" [(ngModel)]="d.wounds.current" (change)="limit()" /></mat-form-field>
+        <mat-form-field><mat-label>Destin</mat-label><input matInput type="number" min="0" [(ngModel)]="d.points.fate" (change)="limit()" /></mat-form-field>
+        <mat-form-field><mat-label>Fortune (max {{ d.points.fate }})</mat-label><input matInput type="number" min="0" [max]="d.points.fate" [(ngModel)]="d.points.fortune" (change)="limit()" /></mat-form-field>
+        <mat-form-field><mat-label>Résilience</mat-label><input matInput type="number" min="0" [(ngModel)]="d.points.resilience" (change)="limit()" /></mat-form-field>
+        <mat-form-field><mat-label>Détermination (max {{ d.points.resilience }})</mat-label><input matInput type="number" min="0" [max]="d.points.resilience" [(ngModel)]="d.points.resolve" (change)="limit()" /></mat-form-field>
+        <mat-form-field><mat-label>Corruption</mat-label><input matInput type="number" min="0" [(ngModel)]="d.corruption" /></mat-form-field>
+        <mat-form-field><mat-label>XP disponible</mat-label><input matInput type="number" min="0" [(ngModel)]="d.experience.current" /></mat-form-field>
+        <mat-form-field><mat-label>XP dépensée</mat-label><input matInput type="number" min="0" [(ngModel)]="d.experience.spent" /></mat-form-field>
+        <mat-form-field class="col-span-2 sm:col-span-4"><mat-label>Motivation</mat-label><input matInput [(ngModel)]="d.points.motivation" /></mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Compétences -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">psychology</mat-icon> Compétences</mat-panel-title>
+        <mat-panel-description>{{ d.skills.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (s of d.skills; track $index) {
+          <div class="edit-row flex flex-wrap items-center gap-2">
+            <mat-form-field class="min-w-40 flex-1"><mat-label>Nom</mat-label><input matInput [(ngModel)]="s.name" /></mat-form-field>
+            <mat-form-field class="w-36"><mat-label>Spécialisation</mat-label><input matInput [(ngModel)]="s.specialization" /></mat-form-field>
+            <mat-form-field class="w-24">
+              <mat-label>Carac.</mat-label>
+              <mat-select [(ngModel)]="s.characteristic">
+                @for (c of characteristics; track c.key) { <mat-option [value]="c.key">{{ c.abbr }}</mat-option> }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-20"><mat-label>Augm.</mat-label><input matInput type="number" min="0" [(ngModel)]="s.advances" /></mat-form-field>
+            <mat-checkbox [(ngModel)]="s.advanced">Avancée</mat-checkbox>
+            <mat-checkbox [(ngModel)]="s.career">Carrière</mat-checkbox>
+            <button mat-icon-button type="button" class="ml-auto" aria-label="Supprimer la compétence" (click)="remove(d.skills, $index)"><mat-icon>delete</mat-icon></button>
           </div>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addArmour()">+ Armure</button>
-  </section>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addSkill()"><mat-icon>add</mat-icon> Ajouter une compétence</button>
+    </mat-expansion-panel>
 
-  <!-- Possessions & richesse -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Possessions</h2>
-    <div class="space-y-2">
-      @for (t of d.trappings; track $index) {
-        <div class="flex flex-wrap items-center gap-2">
-          <input class="input min-w-48 flex-1" placeholder="Nom" [(ngModel)]="t.name" />
-          <label class="text-sm">Qté <input class="input w-16" type="number" min="0" [(ngModel)]="t.quantity" /></label>
-          <label class="text-sm">Enc. <input class="input w-16" type="number" min="0" [(ngModel)]="t.encumbrance" /></label>
-          <button type="button" class="btn-danger" (click)="remove(d.trappings, $index)">✕</button>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addTrapping()">+ Possession</button>
+    <!-- Talents -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">workspace_premium</mat-icon> Talents</mat-panel-title>
+        <mat-panel-description>{{ d.talents.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (t of d.talents; track $index) {
+          <div class="edit-row flex flex-wrap items-center gap-2">
+            <mat-form-field class="w-48 grow sm:grow-0"><mat-label>Nom</mat-label><input matInput [(ngModel)]="t.name" /></mat-form-field>
+            <mat-form-field class="w-20"><mat-label>Fois</mat-label><input matInput type="number" min="1" [(ngModel)]="t.timesTaken" /></mat-form-field>
+            <mat-form-field class="min-w-48 flex-1"><mat-label>Description</mat-label><input matInput [(ngModel)]="t.description" /></mat-form-field>
+            <button mat-icon-button type="button" aria-label="Supprimer le talent" (click)="remove(d.talents, $index)"><mat-icon>delete</mat-icon></button>
+          </div>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addTalent()"><mat-icon>add</mat-icon> Ajouter un talent</button>
+    </mat-expansion-panel>
 
-    <div class="mt-4 flex flex-wrap gap-3">
-      <label class="field">Couronnes d'or <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.crowns" /></label>
-      <label class="field">Pistoles d'argent <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.shillings" /></label>
-      <label class="field">Sous de cuivre <input class="input w-24" type="number" min="0" [(ngModel)]="d.wealth.pennies" /></label>
-    </div>
-  </section>
+    <!-- Armes -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">swords</mat-icon> Armes</mat-panel-title>
+        <mat-panel-description>{{ d.weapons.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (w of d.weapons; track $index) {
+          <div class="edit-row flex flex-wrap items-center gap-2">
+            <mat-form-field class="w-44 grow sm:grow-0"><mat-label>Nom</mat-label><input matInput [(ngModel)]="w.name" /></mat-form-field>
+            <mat-form-field class="w-32"><mat-label>Groupe</mat-label><input matInput [(ngModel)]="w.group" /></mat-form-field>
+            <mat-form-field class="w-36"><mat-label>Allonge / Portée</mat-label><input matInput [(ngModel)]="w.reachOrRange" /></mat-form-field>
+            <mat-checkbox [(ngModel)]="w.damage.usesStrengthBonus">+BF</mat-checkbox>
+            <mat-form-field class="w-20"><mat-label>Dégâts</mat-label><input matInput type="number" [(ngModel)]="w.damage.modifier" /></mat-form-field>
+            <mat-form-field class="w-20"><mat-label>Enc.</mat-label><input matInput type="number" min="0" [(ngModel)]="w.encumbrance" /></mat-form-field>
+            <mat-form-field class="min-w-40 flex-1"><mat-label>Atouts / défauts</mat-label><input matInput [value]="w.qualities.join(', ')" (change)="w.qualities = splitList(inputValue($event))" /></mat-form-field>
+            <button mat-icon-button type="button" aria-label="Supprimer l'arme" (click)="remove(d.weapons, $index)"><mat-icon>delete</mat-icon></button>
+          </div>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addWeapon()"><mat-icon>add</mat-icon> Ajouter une arme</button>
+    </mat-expansion-panel>
 
-  <!-- Sorts -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Sorts</h2>
-    <div class="space-y-3">
-      @for (sp of d.spells; track $index) {
-        <div class="grid gap-2 rounded border border-stone-800 p-2 sm:grid-cols-4">
-          <input class="input" placeholder="Nom" [(ngModel)]="sp.name" />
-          <input class="input" placeholder="Domaine" [(ngModel)]="sp.lore" />
-          <label class="text-sm">NI <input class="input w-16" type="number" min="0" [(ngModel)]="sp.castingNumber" /></label>
-          <button type="button" class="btn-danger justify-self-end" (click)="remove(d.spells, $index)">✕</button>
-          <input class="input" placeholder="Portée" [(ngModel)]="sp.range" />
-          <input class="input" placeholder="Cible" [(ngModel)]="sp.target" />
-          <input class="input sm:col-span-2" placeholder="Durée" [(ngModel)]="sp.duration" />
-          <textarea class="input sm:col-span-4" rows="2" placeholder="Effet" [(ngModel)]="sp.effect"></textarea>
-        </div>
-      }
-    </div>
-    <button type="button" class="btn mt-2" (click)="addSpell()">+ Sort</button>
-  </section>
+    <!-- Armures -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">shield</mat-icon> Armures</mat-panel-title>
+        <mat-panel-description>{{ d.armour.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (a of d.armour; track $index) {
+          <div class="edit-row">
+            <div class="flex flex-wrap items-center gap-2">
+              <mat-form-field class="w-48 grow sm:grow-0"><mat-label>Nom</mat-label><input matInput [(ngModel)]="a.name" /></mat-form-field>
+              <mat-form-field class="w-20"><mat-label>PA</mat-label><input matInput type="number" min="0" [(ngModel)]="a.armourPoints" /></mat-form-field>
+              <mat-form-field class="w-20"><mat-label>Enc.</mat-label><input matInput type="number" min="0" [(ngModel)]="a.encumbrance" /></mat-form-field>
+              <mat-form-field class="min-w-40 flex-1"><mat-label>Atouts / défauts</mat-label><input matInput [value]="a.qualities.join(', ')" (change)="a.qualities = splitList(inputValue($event))" /></mat-form-field>
+              <button mat-icon-button type="button" aria-label="Supprimer l'armure" (click)="remove(d.armour, $index)"><mat-icon>delete</mat-icon></button>
+            </div>
+            <div class="mt-2 flex flex-wrap">
+              @for (loc of hitLocations; track loc[0]) {
+                <mat-checkbox [checked]="a.locations.includes(loc[0])" (change)="toggleLocation(a.locations, loc[0])">{{ loc[1] }}</mat-checkbox>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addArmour()"><mat-icon>add</mat-icon> Ajouter une armure</button>
+    </mat-expansion-panel>
 
-  <!-- Background -->
-  <section>
-    <h2 class="mb-3 font-serif text-xl text-amber-200">Personnage</h2>
-    <div class="grid gap-3 sm:grid-cols-4">
-      <label class="field">Âge <input class="input" type="number" min="0" [(ngModel)]="d.details.age" /></label>
-      <label class="field">Taille <input class="input" [(ngModel)]="d.details.height" /></label>
-      <label class="field">Cheveux <input class="input" [(ngModel)]="d.details.hair" /></label>
-      <label class="field">Yeux <input class="input" [(ngModel)]="d.details.eyes" /></label>
-      <label class="field sm:col-span-4">Apparence <textarea class="input" rows="2" [(ngModel)]="d.details.appearance"></textarea></label>
-      <label class="field sm:col-span-4">Historique <textarea class="input" rows="4" [(ngModel)]="d.details.background"></textarea></label>
-      <label class="field sm:col-span-2">Ambition courte <input class="input" [(ngModel)]="d.ambitions.shortTerm" /></label>
-      <label class="field sm:col-span-2">Ambition longue <input class="input" [(ngModel)]="d.ambitions.longTerm" /></label>
-      <label class="field sm:col-span-2">
-        Psychologie (une par ligne)
-        <textarea class="input" rows="3" [value]="d.psychology.join('\n')" (change)="d.psychology = splitList(inputValue($event), '\n')"></textarea>
-      </label>
-      <label class="field sm:col-span-2">
-        Mutations (une par ligne)
-        <textarea class="input" rows="3" [value]="d.mutations.join('\n')" (change)="d.mutations = splitList(inputValue($event), '\n')"></textarea>
-      </label>
-    </div>
-  </section>
+    <!-- Possessions & richesse -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">backpack</mat-icon> Possessions</mat-panel-title>
+        <mat-panel-description>{{ d.trappings.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (t of d.trappings; track $index) {
+          <div class="edit-row flex flex-wrap items-center gap-2">
+            <mat-form-field class="min-w-48 flex-1"><mat-label>Nom</mat-label><input matInput [(ngModel)]="t.name" /></mat-form-field>
+            <mat-form-field class="w-20"><mat-label>Qté</mat-label><input matInput type="number" min="0" [(ngModel)]="t.quantity" /></mat-form-field>
+            <mat-form-field class="w-20"><mat-label>Enc.</mat-label><input matInput type="number" min="0" [(ngModel)]="t.encumbrance" /></mat-form-field>
+            <button mat-icon-button type="button" aria-label="Supprimer la possession" (click)="remove(d.trappings, $index)"><mat-icon>delete</mat-icon></button>
+          </div>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addTrapping()"><mat-icon>add</mat-icon> Ajouter une possession</button>
 
-  <div class="sticky bottom-0 flex justify-end gap-3 border-t border-stone-800 bg-stone-950 py-3">
-    <button type="button" class="btn" (click)="cancel.emit()" [disabled]="saving()">Annuler</button>
-    <button type="button" class="btn-primary" (click)="submit()" [disabled]="saving()">
-      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+      <div class="mt-4 grid grid-cols-3 gap-3 sm:max-w-md">
+        <mat-form-field><mat-label>CO</mat-label><input matInput type="number" min="0" [(ngModel)]="d.wealth.crowns" /></mat-form-field>
+        <mat-form-field><mat-label>pa</mat-label><input matInput type="number" min="0" [(ngModel)]="d.wealth.shillings" /></mat-form-field>
+        <mat-form-field><mat-label>s</mat-label><input matInput type="number" min="0" [(ngModel)]="d.wealth.pennies" /></mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sorts -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">auto_fix_high</mat-icon> Sorts</mat-panel-title>
+        <mat-panel-description>{{ d.spells.length }}</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="space-y-2">
+        @for (sp of d.spells; track $index) {
+          <div class="edit-row grid gap-2 sm:grid-cols-4">
+            <mat-form-field><mat-label>Nom</mat-label><input matInput [(ngModel)]="sp.name" /></mat-form-field>
+            <mat-form-field><mat-label>Domaine</mat-label><input matInput [(ngModel)]="sp.lore" /></mat-form-field>
+            <mat-form-field><mat-label>NI</mat-label><input matInput type="number" min="0" [(ngModel)]="sp.castingNumber" /></mat-form-field>
+            <button mat-icon-button type="button" class="justify-self-end" aria-label="Supprimer le sort" (click)="remove(d.spells, $index)"><mat-icon>delete</mat-icon></button>
+            <mat-form-field><mat-label>Portée</mat-label><input matInput [(ngModel)]="sp.range" /></mat-form-field>
+            <mat-form-field><mat-label>Cible</mat-label><input matInput [(ngModel)]="sp.target" /></mat-form-field>
+            <mat-form-field class="sm:col-span-2"><mat-label>Durée</mat-label><input matInput [(ngModel)]="sp.duration" /></mat-form-field>
+            <mat-form-field class="sm:col-span-4"><mat-label>Effet</mat-label><textarea matInput rows="2" [(ngModel)]="sp.effect"></textarea></mat-form-field>
+          </div>
+        }
+      </div>
+      <button mat-stroked-button type="button" class="mt-3" (click)="addSpell()"><mat-icon>add</mat-icon> Ajouter un sort</button>
+    </mat-expansion-panel>
+
+    <!-- Background -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon class="mr-2 text-primary">person</mat-icon> Personnage</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="grid gap-3 sm:grid-cols-4">
+        <mat-form-field><mat-label>Âge</mat-label><input matInput type="number" min="0" [(ngModel)]="d.details.age" /></mat-form-field>
+        <mat-form-field><mat-label>Taille</mat-label><input matInput [(ngModel)]="d.details.height" /></mat-form-field>
+        <mat-form-field><mat-label>Cheveux</mat-label><input matInput [(ngModel)]="d.details.hair" /></mat-form-field>
+        <mat-form-field><mat-label>Yeux</mat-label><input matInput [(ngModel)]="d.details.eyes" /></mat-form-field>
+        <mat-form-field class="sm:col-span-4"><mat-label>Apparence</mat-label><textarea matInput rows="2" [(ngModel)]="d.details.appearance"></textarea></mat-form-field>
+        <mat-form-field class="sm:col-span-4"><mat-label>Historique</mat-label><textarea matInput rows="4" [(ngModel)]="d.details.background"></textarea></mat-form-field>
+        <mat-form-field class="sm:col-span-2"><mat-label>Ambition courte</mat-label><input matInput [(ngModel)]="d.ambitions.shortTerm" /></mat-form-field>
+        <mat-form-field class="sm:col-span-2"><mat-label>Ambition longue</mat-label><input matInput [(ngModel)]="d.ambitions.longTerm" /></mat-form-field>
+        <mat-form-field class="sm:col-span-2">
+          <mat-label>Psychologie</mat-label>
+          <textarea matInput rows="3" [value]="d.psychology.join('\n')" (change)="d.psychology = splitList(inputValue($event), '\n')"></textarea>
+          <mat-hint>Une par ligne</mat-hint>
+        </mat-form-field>
+        <mat-form-field class="sm:col-span-2">
+          <mat-label>Mutations</mat-label>
+          <textarea matInput rows="3" [value]="d.mutations.join('\n')" (change)="d.mutations = splitList(inputValue($event), '\n')"></textarea>
+          <mat-hint>Une par ligne</mat-hint>
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <div class="sticky bottom-0 z-10 -mx-4 mt-4 flex justify-end gap-3 border-t border-outline-variant bg-surface/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-t-xl">
+    <button mat-button type="button" (click)="cancel.emit()" [disabled]="saving()">Annuler</button>
+    <button mat-flat-button type="button" (click)="submit()" [disabled]="saving()">
+      <mat-icon>save</mat-icon> {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
     </button>
   </div>
 </div>

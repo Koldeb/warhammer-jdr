@@ -1,60 +1,96 @@
-<a routerLink="/journal" class="text-sm text-amber-400 hover:underline">← Journal</a>
+<a mat-button routerLink="/journal" class="-ml-3">
+  <mat-icon>arrow_back</mat-icon> Journal
+</a>
+
+@if (session.isLoading()) {
+  <mat-progress-bar mode="indeterminate" class="my-4" />
+}
 
 @if (session.value(); as s) {
-  <h1 class="mt-2 font-serif text-3xl text-amber-200">Séance {{ s.number }} — {{ s.title }}</h1>
-  <p class="text-sm text-stone-400">
-    {{ s.inGameDate }} · jouée le {{ s.playedOn | date: 'dd/MM/yyyy' }} · {{ s.xpAwarded }} XP
-  </p>
+  <header class="mt-2">
+    <p class="font-display text-sm tracking-widest text-on-surface-variant uppercase">Séance {{ s.number }}</p>
+    <h1 class="page-title">{{ s.title }}</h1>
+    <div class="mt-3 flex flex-wrap gap-2 text-sm">
+      <span class="pill">
+        <mat-icon class="icon-sm text-primary">calendar_month</mat-icon> {{ s.inGameDate }}
+      </span>
+      <span class="pill">
+        <mat-icon class="icon-sm text-primary">event</mat-icon> Jouée le {{ s.playedOn | date: 'dd/MM/yyyy' }}
+      </span>
+      <span class="inline-flex items-center gap-1 rounded-full bg-primary-container px-3 py-1 text-on-primary-container">
+        <mat-icon class="icon-sm">military_tech</mat-icon> {{ s.xpAwarded }} XP
+      </span>
+    </div>
+  </header>
 
-  <p class="mt-4 max-w-3xl leading-relaxed">{{ s.summary }}</p>
+  <p class="mt-6 max-w-3xl text-lg leading-relaxed">{{ s.summary }}</p>
 
   @if (gmNotes.value(); as notes) {
-    <aside class="mt-6 rounded border border-red-900 bg-red-950/40 p-4">
-      <h2 class="font-serif text-lg text-red-200">Notes du MJ <span class="text-xs">(privées)</span></h2>
+    <aside class="mt-6 rounded border border-tertiary/40 bg-tertiary-container/40 p-4">
+      <h2 class="flex items-center gap-2 font-display text-lg text-tertiary">
+        <mat-icon>lock</mat-icon> Notes du MJ <span class="text-xs">(privées)</span>
+      </h2>
       <p class="mt-2 whitespace-pre-line">{{ notes.content }}</p>
     </aside>
   }
 
-  <div class="mt-8 grid gap-6 md:grid-cols-2">
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Événements</h2>
-      <ol class="list-decimal space-y-1 pl-5">
-        @for (e of s.events; track $index) {
-          <li>{{ e }}</li>
-        }
-      </ol>
-    </section>
+  <div class="mt-8 grid gap-4 md:grid-cols-2">
+    <mat-card appearance="outlined" class="md:col-span-2">
+      <mat-card-content>
+        <h2 class="section-title"><mat-icon>timeline</mat-icon> Événements</h2>
+        <ol class="space-y-3">
+          @for (e of s.events; track $index) {
+            <li class="flex gap-3">
+              <span class="avatar h-7 w-7 text-xs">{{ $index + 1 }}</span>
+              <span class="pt-0.5">{{ e }}</span>
+            </li>
+          }
+        </ol>
+      </mat-card-content>
+    </mat-card>
 
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">PNJ rencontrés</h2>
-      <ul class="space-y-2">
-        @for (npc of s.npcs; track npc.name) {
-          <li>
-            <span class="font-semibold text-amber-100">{{ npc.name }}</span>
-            <span class="ml-2 text-xs text-stone-400">({{ attitudeLabels[npc.attitude] }})</span>
-            <p class="text-sm">{{ npc.description }}</p>
-          </li>
-        }
-      </ul>
-    </section>
+    <mat-card appearance="outlined" class="md:col-span-2">
+      <mat-card-content>
+        <h2 class="section-title"><mat-icon>diversity_3</mat-icon> PNJ rencontrés</h2>
+        <ul class="grid gap-3 sm:grid-cols-2">
+          @for (npc of s.npcs; track npc.name) {
+            <li class="tile">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold">{{ npc.name }}</span>
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" [class]="attitudeClasses[npc.attitude]">
+                  {{ attitudeLabels[npc.attitude] }}
+                </span>
+              </div>
+              <p class="muted mt-1">{{ npc.description }}</p>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
 
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Lieux</h2>
-      <ul class="list-disc pl-5">
-        @for (l of s.locations; track l) {
-          <li>{{ l }}</li>
-        }
-      </ul>
-    </section>
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <h2 class="section-title"><mat-icon>map</mat-icon> Lieux</h2>
+        <mat-chip-set aria-label="Lieux visités">
+          @for (l of s.locations; track l) {
+            <mat-chip>{{ l }}</mat-chip>
+          }
+        </mat-chip-set>
+      </mat-card-content>
+    </mat-card>
 
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Butin</h2>
-      <ul class="list-disc pl-5">
-        @for (l of s.loot; track l) {
-          <li>{{ l }}</li>
-        }
-      </ul>
-    </section>
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <h2 class="section-title"><mat-icon>paid</mat-icon> Butin</h2>
+        <ul class="space-y-1">
+          @for (l of s.loot; track l) {
+            <li class="flex items-start gap-2"><mat-icon class="icon-sm mt-0.5 text-primary">diamond</mat-icon> {{ l }}</li>
+          } @empty {
+            <li class="muted">Rien.</li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
   </div>
 } @else if (!session.isLoading()) {
   <p class="mt-4">Séance introuvable.</p>

@@ -1,4 +1,7 @@
 import { Component, computed, inject, resource } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { CampaignRepository } from '../../core/data/campaign.repository';
@@ -6,7 +9,7 @@ import { SPECIES_LABELS } from '../../core/rules/wfrp';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink],
+  imports: [RouterLink, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './home.page.html',
 })
 export class HomePage {

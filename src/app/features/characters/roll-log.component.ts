@@ -1,4 +1,6 @@
 import { Component, input, output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { TestResult, formatSl } from '../../core/rules/dice';
 
 export interface RollEntry {
@@ -15,6 +17,7 @@ export interface RollEntry {
 /** Historique des derniers jets, affiché en bas à droite de l'écran. */
 @Component({
   selector: 'app-roll-log',
+  imports: [MatButtonModule, MatIconModule],
   templateUrl: './roll-log.component.html',
 })
 export class RollLogComponent {

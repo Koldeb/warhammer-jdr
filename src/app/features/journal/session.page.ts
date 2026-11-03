@@ -1,12 +1,25 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, input, resource } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { CampaignRepository } from '../../core/data/campaign.repository';
 import { Npc } from '../../core/models/campaign.model';
 
 @Component({
   selector: 'app-session-page',
-  imports: [RouterLink, DatePipe],
+  imports: [
+    RouterLink,
+    DatePipe,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatIconModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './session.page.html',
 })
 export class SessionPage {
@@ -30,5 +43,12 @@ export class SessionPage {
     neutre: 'Neutre',
     hostile: 'Hostile',
     inconnu: 'Inconnu',
+  };
+
+  protected readonly attitudeClasses: Record<Npc['attitude'], string> = {
+    allie: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200',
+    neutre: 'bg-surface-container-highest text-on-surface-variant',
+    hostile: 'bg-error-container text-on-error-container',
+    inconnu: 'bg-surface-container-highest text-on-surface-variant',
   };
 }

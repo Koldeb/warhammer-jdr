@@ -1,5 +1,11 @@
 import { Component, input, linkedSignal, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { Character, HitLocation, Species, StatusTier } from '../../core/models/character.model';
 import {
   CHARACTERISTICS,
@@ -13,7 +19,15 @@ import {
 /** Formulaire d'édition d'une fiche. Travaille sur une copie, émise à l'enregistrement. */
 @Component({
   selector: 'app-character-editor',
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatExpansionModule,
+    MatIconModule,
+    MatInputModule,
+    MatSelectModule,
+  ],
   templateUrl: './character-editor.component.html',
 })
 export class CharacterEditorComponent {

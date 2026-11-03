@@ -1,40 +1,63 @@
+@if (campaign.isLoading() || characters.isLoading()) {
+  <mat-progress-bar mode="indeterminate" class="mb-4" />
+}
+
 @if (campaign.value(); as c) {
   <section class="mb-10">
-    <h1 class="font-serif text-4xl text-amber-200">{{ c.name }}</h1>
-    <p class="mt-1 text-sm text-stone-400">
-      MJ : {{ c.gameMaster }} · Lieu actuel : {{ c.currentLocation }}
-    </p>
-    <p class="mt-4 max-w-3xl leading-relaxed">{{ c.pitch }}</p>
-
-    <div class="mt-6 rounded border border-stone-700 bg-stone-900 p-4">
-      <h2 class="font-serif text-xl text-amber-200">{{ c.party.name }}</h2>
-      <p class="mt-2"><span class="text-stone-400">Ambition courte :</span> {{ c.party.shortTermAmbition }}</p>
-      <p><span class="text-stone-400">Ambition longue :</span> {{ c.party.longTermAmbition }}</p>
+    <h1 class="page-title">{{ c.name }}</h1>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <span class="pill">
+        <mat-icon class="icon-sm text-primary">person</mat-icon> MJ : {{ c.gameMaster }}
+      </span>
+      <span class="pill">
+        <mat-icon class="icon-sm text-primary">location_on</mat-icon> {{ c.currentLocation }}
+      </span>
     </div>
+    <p class="mt-4 max-w-3xl leading-relaxed text-on-surface-variant">{{ c.pitch }}</p>
+
+    <mat-card appearance="outlined" class="mt-6">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="text-primary">flag</mat-icon>
+        <mat-card-title>{{ c.party.name }}</mat-card-title>
+        <mat-card-subtitle>Ambitions du groupe</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="!mt-3 grid gap-4 sm:grid-cols-2">
+        <div>
+          <div class="stat-label">Ambition courte</div>
+          <p class="mt-1">{{ c.party.shortTermAmbition }}</p>
+        </div>
+        <div>
+          <div class="stat-label">Ambition longue</div>
+          <p class="mt-1">{{ c.party.longTermAmbition }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </section>
 }
 
 <section class="mb-10">
-  <h2 class="mb-4 font-serif text-2xl text-amber-200">
+  <h2 class="section-title text-2xl">
+    <mat-icon>groups</mat-icon>
     {{ auth.isGm() ? 'Personnages' : 'Mes personnages' }}
   </h2>
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     @for (ch of characters.value() ?? []; track ch.id) {
-      <a
-        [routerLink]="['/personnages', ch.id]"
-        class="rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
-      >
-        <h3 class="font-serif text-lg text-amber-100">{{ ch.name }}</h3>
-        <p class="text-sm text-stone-400">
-          {{ speciesLabels[ch.species] }} · {{ ch.career.title }} ({{ ch.career.name }})
-        </p>
-        @if (auth.isGm()) {
-          <p class="mt-2 text-xs text-stone-500">Joué par {{ playerNames().get(ch.playerId) }}</p>
-        }
+      <a [routerLink]="['/personnages', ch.id]" class="card-link flex gap-3">
+        <span class="avatar h-12 w-12 text-lg">{{ ch.name.charAt(0) }}</span>
+        <span class="min-w-0">
+          <span class="block truncate font-display text-lg font-semibold text-on-surface">{{ ch.name }}</span>
+          <span class="muted block">{{ speciesLabels[ch.species] }} · {{ ch.career.title }}</span>
+          <span class="mt-2 inline-block rounded-full bg-primary-container/60 px-2 py-0.5 text-xs text-on-primary-container">
+            {{ ch.career.name }}
+          </span>
+          @if (auth.isGm()) {
+            <span class="mt-2 block text-xs text-on-surface-variant">Joué par {{ playerNames().get(ch.playerId) }}</span>
+          }
+        </span>
       </a>
     } @empty {
       @if (!characters.isLoading()) {
-        <p class="text-stone-400">Aucune fiche pour le moment.</p>
+        <p class="muted">Aucune fiche pour le moment.</p>
       }
     }
   </div>
@@ -42,14 +65,16 @@
 
 @if (lastSession.value(); as s) {
   <section>
-    <h2 class="mb-4 font-serif text-2xl text-amber-200">Dernière séance</h2>
-    <a
-      [routerLink]="['/journal', s.id]"
-      class="block rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
-    >
-      <h3 class="font-serif text-lg text-amber-100">#{{ s.number }} — {{ s.title }}</h3>
-      <p class="text-sm text-stone-400">{{ s.inGameDate }}</p>
-      <p class="mt-2">{{ s.summary }}</p>
+    <h2 class="section-title text-2xl"><mat-icon>history_edu</mat-icon> Dernière séance</h2>
+    <a [routerLink]="['/journal', s.id]" class="card-link">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 class="text-lg font-semibold text-on-surface">#{{ s.number }} — {{ s.title }}</h3>
+        <span class="muted">{{ s.inGameDate }}</span>
+      </div>
+      <p class="mt-2 line-clamp-3 text-on-surface-variant">{{ s.summary }}</p>
+      <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+        Lire le compte rendu <mat-icon class="icon-sm">arrow_forward</mat-icon>
+      </span>
     </a>
   </section>
 }

@@ -1,19 +1,21 @@
-<div class="mx-auto max-w-sm">
-  <h1 class="mb-2 font-serif text-3xl text-amber-200">Qui êtes-vous ?</h1>
-  <p class="mb-6 text-sm text-stone-400">Connexion simulée en attendant Supabase.</p>
-
-  <ul class="space-y-2">
-    @for (u of auth.availableUsers; track u.id) {
-      <li>
-        <button
-          type="button"
-          (click)="login(u.id)"
-          class="w-full rounded border border-stone-700 bg-stone-900 p-3 text-left transition hover:border-amber-500"
-        >
-          <span class="text-amber-100">{{ u.displayName }}</span>
-          <span class="ml-2 text-xs text-stone-400">{{ u.role === 'mj' ? 'Maître du Jeu' : 'Joueur' }}</span>
-        </button>
-      </li>
-    }
-  </ul>
+<div class="flex min-h-[70dvh] items-center justify-center">
+  <mat-card appearance="outlined" class="w-full max-w-md">
+    <mat-card-header class="!flex-col !items-center !pt-8 text-center">
+      <div class="avatar mb-4 h-16 w-16"><mat-icon class="!h-8 !w-8 !text-[2rem]">shield_person</mat-icon></div>
+      <mat-card-title class="!font-display !text-2xl">Qui êtes-vous ?</mat-card-title>
+      <!-- //Changer pour Supabase : remplacer la liste de profils par un formulaire e-mail / mot de passe (supabase.auth). -->
+      <mat-card-subtitle>Connexion simulée en attendant Supabase.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="!pt-4">
+      <mat-action-list>
+        @for (u of auth.availableUsers; track u.id) {
+          <button mat-list-item type="button" (click)="login(u.id)">
+            <span matListItemAvatar class="avatar h-10 w-10">{{ u.displayName.charAt(0) }}</span>
+            <span matListItemTitle>{{ u.displayName }}</span>
+            <span matListItemLine>{{ u.role === 'mj' ? 'Maître du Jeu' : 'Joueur' }}</span>
+          </button>
+        }
+      </mat-action-list>
+    </mat-card-content>
+  </mat-card>
 </div>

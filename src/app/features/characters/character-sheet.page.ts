@@ -1,4 +1,11 @@
 import { Component, computed, inject, input, resource, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatRippleModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { CampaignRepository } from '../../core/data/campaign.repository';
@@ -24,7 +31,18 @@ const DEFAULT_DIFFICULTY = DIFFICULTIES.findIndex((d) => d.modifier === 0);
 
 @Component({
   selector: 'app-character-sheet-page',
-  imports: [RouterLink, CharacterEditorComponent, RollLogComponent],
+  imports: [
+    RouterLink,
+    CharacterEditorComponent,
+    RollLogComponent,
+    MatButtonModule,
+    MatCardModule,
+    MatRippleModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressBarModule,
+    MatTabsModule,
+  ],
   templateUrl: './character-sheet.page.html',
 })
 export class CharacterSheetPage {

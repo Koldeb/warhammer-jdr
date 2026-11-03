@@ -2,47 +2,126 @@
 
 @import 'tailwindcss';
 
+/* Le thème sombre est piloté par la classe .dark sur <html> (ThemeService), pas par le système. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Couleurs Tailwind branchées sur les tokens Material (material-theme.scss) : bg-surface-container, text-primary... */
+@theme inline {
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', Roboto, system-ui, sans-serif;
+
+  /* Durée commune de toutes les transitions et effets au survol. */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --color-primary: var(--mat-sys-primary);
+  --color-on-primary: var(--mat-sys-on-primary);
+  --color-primary-container: var(--mat-sys-primary-container);
+  --color-on-primary-container: var(--mat-sys-on-primary-container);
+  --color-tertiary: var(--mat-sys-tertiary);
+  --color-tertiary-container: var(--mat-sys-tertiary-container);
+  --color-on-tertiary-container: var(--mat-sys-on-tertiary-container);
+  --color-error: var(--mat-sys-error);
+  --color-error-container: var(--mat-sys-error-container);
+  --color-on-error-container: var(--mat-sys-on-error-container);
+  --color-surface: var(--mat-sys-surface);
+  --color-surface-container-lowest: var(--mat-sys-surface-container-lowest);
+  --color-surface-container-low: var(--mat-sys-surface-container-low);
+  --color-surface-container: var(--mat-sys-surface-container);
+  --color-surface-container-high: var(--mat-sys-surface-container-high);
+  --color-surface-container-highest: var(--mat-sys-surface-container-highest);
+  --color-on-surface: var(--mat-sys-on-surface);
+  --color-on-surface-variant: var(--mat-sys-on-surface-variant);
+  --color-outline: var(--mat-sys-outline);
+  --color-outline-variant: var(--mat-sys-outline-variant);
+}
+
 @layer base {
-  body {
-    @apply bg-stone-950 text-stone-200;
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  /* Bascule de thème en douceur. */
+  body,
+  .mat-mdc-card,
+  .mat-toolbar,
+  .mat-drawer,
+  .mat-expansion-panel {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
 }
 
+/* Le preflight Tailwind ajoute une bordure à l'encoche des champs Material "outline". */
+.mdc-notched-outline__notch {
+  border-right-style: hidden;
+}
+
+/* Cartes Material : légère élévation au survol. */
+.mat-mdc-card.mat-mdc-card-outlined:hover {
+  border-color: var(--mat-sys-primary);
+  box-shadow: 0 4px 16px -6px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent);
+}
+
 @layer components {
+  .page-title {
+    @apply font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl;
+  }
+  .section-title {
+    @apply mb-3 flex items-center gap-2 font-display text-lg font-semibold text-on-surface [&>.mat-icon]:text-primary;
+  }
+  .muted {
+    @apply text-sm text-on-surface-variant;
+  }
+
+  /* Carte cliquable (lien vers une fiche, une séance...) : ombre légère, plus marquée au survol. */
+  .card-link {
+    @apply block rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm shadow-black/5 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg hover:shadow-black/10 focus-visible:outline-2 focus-visible:outline-primary active:translate-y-0 active:shadow-sm dark:bg-surface-container-low dark:shadow-black/40 dark:hover:shadow-black/60;
+  }
+
+  .avatar {
+    @apply flex shrink-0 items-center justify-center rounded-full bg-primary-container font-display font-bold text-on-primary-container;
+  }
+
+  /* Tuile de statistique (Blessures, Fortune...). */
   .stat {
-    @apply flex flex-col items-center rounded border border-stone-700 bg-stone-900 p-2 text-lg font-bold text-amber-100;
+    @apply flex flex-col items-center justify-center gap-1 rounded border border-outline-variant bg-surface-container-lowest p-3 text-center transition hover:border-primary hover:shadow-md hover:shadow-black/5 dark:bg-surface-container-low;
   }
-  .stat span {
-    @apply text-xs font-normal text-stone-400;
+  .stat-label {
+    @apply flex items-center gap-1 text-xs tracking-wide text-on-surface-variant uppercase;
   }
-}
-
-@layer components {
-  .field {
-    @apply flex flex-col gap-1 text-xs text-stone-400;
-  }
-  .input {
-    @apply rounded border border-stone-700 bg-stone-900 px-2 py-1 text-sm text-stone-100 focus:border-amber-500 focus:outline-none;
-  }
-  .btn {
-    @apply rounded border border-stone-600 px-3 py-1.5 text-sm hover:border-amber-500 disabled:opacity-50;
-  }
-  .btn-primary {
-    @apply rounded bg-amber-700 px-3 py-1.5 text-sm font-semibold text-stone-950 hover:bg-amber-600 disabled:opacity-50;
-  }
-  .btn-danger {
-    @apply rounded px-2 py-1 text-sm text-red-400 hover:bg-red-950;
-  }
-}
-
-@layer components {
-  .roll-target {
-    @apply cursor-pointer rounded transition hover:bg-amber-900/40 hover:text-amber-300;
+  .stat-value {
+    @apply text-xl font-bold text-on-surface tabular-nums;
   }
   .counter {
-    @apply flex items-center gap-2;
+    @apply flex items-center gap-1;
   }
-  .counter button {
-    @apply h-6 w-6 rounded border border-stone-600 text-sm leading-none hover:border-amber-500 disabled:opacity-30;
+
+  /* Ligne éditable d'une liste (compétence, arme...). */
+  .edit-row {
+    @apply rounded border border-outline-variant bg-surface-container-low p-3 transition hover:border-outline;
   }
+
+  /* Élément de liste dans une carte (talent, arme, PNJ...). */
+  .tile {
+    @apply rounded bg-surface-container-low p-3 transition hover:bg-surface-container dark:bg-surface-container;
+  }
+
+  /* Pastille d'information (lieu, date...). */
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1 text-sm;
+  }
+}
+
+/* Icônes Material plus petites (hors @layer pour primer sur les styles de mat-icon). */
+.mat-icon.icon-sm {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
 }

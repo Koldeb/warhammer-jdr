@@ -1,19 +1,31 @@
-<h1 class="mb-6 font-serif text-3xl text-amber-200">Journal de campagne</h1>
+<h1 class="page-title mb-6">Journal de campagne</h1>
 
-<ol class="space-y-4">
+@if (sessions.isLoading()) {
+  <mat-progress-bar mode="indeterminate" class="mb-4" />
+}
+
+<ol class="relative space-y-4 sm:border-l sm:border-outline-variant sm:pl-8">
   @for (s of sessions.value() ?? []; track s.id) {
-    <li>
-      <a
-        [routerLink]="['/journal', s.id]"
-        class="block rounded border border-stone-700 bg-stone-900 p-4 transition hover:border-amber-500"
-      >
+    <li class="relative">
+      <span class="avatar absolute top-4 -left-[3.2rem] hidden h-9 w-9 text-sm ring-4 ring-surface sm:flex">{{ s.number }}</span>
+      <a [routerLink]="['/journal', s.id]" class="card-link">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 class="font-serif text-xl text-amber-100">Séance {{ s.number }} — {{ s.title }}</h2>
-          <span class="text-sm text-stone-400">Jouée le {{ s.playedOn | date: 'dd/MM/yyyy' }}</span>
+          <h2 class="text-xl font-semibold text-on-surface">
+            <span class="text-primary sm:hidden">#{{ s.number }} · </span>{{ s.title }}
+          </h2>
+          <span class="muted inline-flex items-center gap-1">
+            <mat-icon class="icon-sm">event</mat-icon> {{ s.playedOn | date: 'dd/MM/yyyy' }}
+          </span>
         </div>
-        <p class="text-sm text-stone-400">{{ s.inGameDate }}</p>
-        <p class="mt-2">{{ s.summary }}</p>
+        <p class="muted mt-1 inline-flex items-center gap-1">
+          <mat-icon class="icon-sm">calendar_month</mat-icon> {{ s.inGameDate }}
+        </p>
+        <p class="mt-2 line-clamp-3 text-on-surface-variant">{{ s.summary }}</p>
       </a>
     </li>
+  } @empty {
+    @if (!sessions.isLoading()) {
+      <p class="muted">Aucune séance pour le moment.</p>
+    }
   }
 </ol>

@@ -31,7 +31,7 @@ describe('CharacterEditorComponent', () => {
 
   it('ignore les lignes ajoutées laissées vides', async () => {
     const { fixture, button, original, saved } = await setup();
-    button('+ Compétence').click();
+    button('Ajouter une compétence').click();
     await fixture.whenStable();
     button('Enregistrer').click();
     expect(saved()?.skills).toHaveLength(original.skills.length);

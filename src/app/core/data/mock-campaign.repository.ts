@@ -13,6 +13,9 @@ import users from './mock/users.json';
 
 const CHARACTERS_STORAGE_KEY = 'wjdr-mock-characters';
 
+//Changer pour Supabase
+// Cette classe sera remplacée par SupabaseCampaignRepository (même interface CampaignRepository),
+// branchée dans app.config.ts. Les contrôles canRead/canWrite deviendront des policies RLS.
 /**
  * Lit les JSON mockés et simule les policies RLS en fonction de l'utilisateur connecté.
  * Les fiches modifiées sont conservées dans le localStorage pour survivre au rechargement.

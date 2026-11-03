@@ -1,22 +1,39 @@
-<a routerLink="/" class="text-sm text-amber-400 hover:underline">← Groupe</a>
+<a mat-button routerLink="/" class="-ml-3">
+  <mat-icon>arrow_back</mat-icon> Groupe
+</a>
+
+@if (character.isLoading() && !character.value()) {
+  <mat-progress-bar mode="indeterminate" class="my-4" />
+}
 
 @if (character.value(); as ch) {
-  <header class="mt-2 mb-6">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="font-serif text-4xl text-amber-200">{{ ch.name }}</h1>
-      @if (canEdit() && !editing()) {
-        <button type="button" class="btn-primary" (click)="editing.set(true)">Modifier la fiche</button>
-      }
+  <!-- En-tête -->
+  <header class="mt-2 mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+    <span class="avatar h-16 w-16 text-2xl">{{ ch.name.charAt(0) }}</span>
+    <div class="min-w-0 flex-1">
+      <h1 class="page-title">{{ ch.name }}</h1>
+      <p class="muted mt-1">
+        {{ speciesLabels[ch.species] }} · {{ ch.career.class }} · {{ ch.career.name }} — {{ ch.career.title }}
+      </p>
+      <div class="mt-2 flex flex-wrap gap-2 text-xs">
+        <span class="rounded-full bg-surface-container-high px-2.5 py-1">Échelon {{ ch.career.level }}</span>
+        <span class="rounded-full bg-primary-container px-2.5 py-1 text-on-primary-container">
+          Statut {{ tierLabels[ch.career.status.tier] }} {{ ch.career.status.standing }}
+        </span>
+      </div>
     </div>
-    <p class="text-stone-400">
-      {{ speciesLabels[ch.species] }} · {{ ch.career.class }} · {{ ch.career.name }} —
-      {{ ch.career.title }} (échelon {{ ch.career.level }}) ·
-      Statut {{ tierLabels[ch.career.status.tier] }} {{ ch.career.status.standing }}
-    </p>
-    @if (saveError(); as err) {
-      <p class="mt-2 rounded border border-red-800 bg-red-950/50 p-2 text-sm text-red-200">{{ err }}</p>
+    @if (canEdit() && !editing()) {
+      <button mat-flat-button type="button" (click)="editing.set(true)">
+        <mat-icon>edit</mat-icon> Modifier la fiche
+      </button>
     }
   </header>
+
+  @if (saveError(); as err) {
+    <div class="mb-4 flex items-center gap-2 rounded bg-error-container p-3 text-sm text-on-error-container" role="alert">
+      <mat-icon>error</mat-icon> {{ err }}
+    </div>
+  }
 
   @if (editing()) {
     <app-character-editor
@@ -28,236 +45,291 @@
   } @else {
 
   <!-- Caractéristiques -->
-  <section class="mb-8 overflow-x-auto">
-    <div class="mb-2 flex flex-wrap items-center gap-2 text-sm text-stone-400">
-      <span>Cliquez sur une valeur pour faire un test.</span>
-      <label class="ml-auto flex items-center gap-2">
-        Difficulté
-        <select class="input" [value]="difficultyIndex()" (change)="difficultyIndex.set(+$any($event.target).value)">
-          @for (d of difficulties; track d.label) {
-            <option [value]="$index">{{ d.label }} ({{ d.modifier >= 0 ? '+' : '' }}{{ d.modifier }})</option>
-          }
-        </select>
-      </label>
-    </div>
-    <table class="w-full min-w-[640px] border-collapse text-center">
-      <thead>
-        <tr class="text-amber-200">
-          <th class="p-1 text-left"></th>
-          @for (c of characteristics; track c.key) {
-            <th class="border border-stone-700 p-1" [title]="c.label">{{ c.abbr }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="p-1 text-left text-sm text-stone-400">Initiale</td>
-          @for (c of characteristics; track c.key) {
-            <td class="border border-stone-700 p-1">{{ ch.characteristics[c.key].initial }}</td>
-          }
-        </tr>
-        <tr>
-          <td class="p-1 text-left text-sm text-stone-400">Augm.</td>
-          @for (c of characteristics; track c.key) {
-            <td class="border border-stone-700 p-1">{{ ch.characteristics[c.key].advances }}</td>
-          }
-        </tr>
-        <tr class="font-bold text-amber-100">
-          <td class="p-1 text-left text-sm text-stone-400">Actuelle</td>
-          @for (c of characteristics; track c.key) {
-            <td class="border border-stone-700 p-0">
-              <button
-                type="button"
-                class="roll-target w-full p-1"
-                [title]="'Test de ' + c.label"
-                (click)="rollTest(c.label, characteristicValue(ch.characteristics[c.key]), c.key)"
-              >
-                {{ characteristicValue(ch.characteristics[c.key]) }}
-              </button>
-            </td>
-          }
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <mat-card appearance="outlined" class="mb-6">
+    <mat-card-content>
+      <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <h2 class="section-title !mb-0"><mat-icon>casino</mat-icon> Caractéristiques</h2>
+        <span class="muted hidden md:inline">Cliquez sur une valeur pour faire un test.</span>
+        <mat-form-field class="ml-auto w-full sm:w-56">
+          <mat-label>Difficulté</mat-label>
+          <select matNativeControl [value]="difficultyIndex()" (change)="difficultyIndex.set(+$any($event.target).value)">
+            @for (d of difficulties; track d.label) {
+              <option [value]="$index">{{ d.label }} ({{ d.modifier >= 0 ? '+' : '' }}{{ d.modifier }})</option>
+            }
+          </select>
+        </mat-form-field>
+      </div>
+
+      <div class="grid grid-cols-5 gap-2 lg:grid-cols-10">
+        @for (c of characteristics; track c.key) {
+          <button
+            type="button"
+            matRipple
+            class="flex flex-col items-center rounded border border-outline-variant bg-surface-container-lowest px-1 py-2 shadow-sm shadow-black/5 transition hover:-translate-y-0.5 hover:border-primary hover:bg-primary-container/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-primary active:translate-y-0 dark:bg-surface-container-low"
+            [title]="'Test de ' + c.label"
+            (click)="rollTest(c.label, characteristicValue(ch.characteristics[c.key]), c.key)"
+          >
+            <span class="font-display text-xs font-semibold text-primary">{{ c.abbr }}</span>
+            <span class="text-2xl font-bold tabular-nums">{{ characteristicValue(ch.characteristics[c.key]) }}</span>
+            <span class="text-[0.65rem] text-on-surface-variant tabular-nums">
+              {{ ch.characteristics[c.key].initial }} + {{ ch.characteristics[c.key].advances }}
+            </span>
+          </button>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
 
   <!-- Points & état -->
-  <section class="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+  <section class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
     <div class="stat">
-      <span>Blessures</span>
+      <span class="stat-label"><mat-icon class="icon-sm">favorite</mat-icon> Blessures</span>
       <div class="counter">
         @if (canEdit()) {
-          <button type="button" aria-label="Retirer une blessure" [disabled]="ch.wounds.current <= 0" (click)="adjust('wounds', -1)">−</button>
+          <button mat-icon-button type="button" aria-label="Retirer une blessure" [disabled]="ch.wounds.current <= 0" (click)="adjust('wounds', -1)"><mat-icon>remove</mat-icon></button>
         }
-        {{ ch.wounds.current }} / {{ maxWounds(ch) }}
+        <span class="stat-value">{{ ch.wounds.current }}<span class="text-sm text-on-surface-variant"> / {{ maxWounds(ch) }}</span></span>
         @if (canEdit()) {
-          <button type="button" aria-label="Ajouter une blessure" [disabled]="ch.wounds.current >= maxWounds(ch)" (click)="adjust('wounds', 1)">+</button>
-        }
-      </div>
-    </div>
-    <div class="stat"><span>Destin</span>{{ ch.points.fate }}</div>
-    <div class="stat">
-      <span>Fortune</span>
-      <div class="counter">
-        @if (canEdit()) {
-          <button type="button" aria-label="Dépenser un point de Fortune" [disabled]="ch.points.fortune <= 0" (click)="adjust('fortune', -1)">−</button>
-        }
-        {{ ch.points.fortune }} / {{ ch.points.fate }}
-        @if (canEdit()) {
-          <button type="button" aria-label="Récupérer un point de Fortune" [disabled]="ch.points.fortune >= ch.points.fate" (click)="adjust('fortune', 1)">+</button>
+          <button mat-icon-button type="button" aria-label="Ajouter une blessure" [disabled]="ch.wounds.current >= maxWounds(ch)" (click)="adjust('wounds', 1)"><mat-icon>add</mat-icon></button>
         }
       </div>
     </div>
     <div class="stat">
-      <span>Résilience</span>
+      <span class="stat-label"><mat-icon class="icon-sm">auto_awesome</mat-icon> Fortune</span>
       <div class="counter">
         @if (canEdit()) {
-          <button type="button" aria-label="Retirer un point de Résilience" [disabled]="ch.points.resilience <= 0" (click)="adjust('resilience', -1)">−</button>
+          <button mat-icon-button type="button" aria-label="Dépenser un point de Fortune" [disabled]="ch.points.fortune <= 0" (click)="adjust('fortune', -1)"><mat-icon>remove</mat-icon></button>
         }
-        {{ ch.points.resilience }}
+        <span class="stat-value">{{ ch.points.fortune }}<span class="text-sm text-on-surface-variant"> / {{ ch.points.fate }}</span></span>
         @if (canEdit()) {
-          <button type="button" aria-label="Ajouter un point de Résilience" (click)="adjust('resilience', 1)">+</button>
+          <button mat-icon-button type="button" aria-label="Récupérer un point de Fortune" [disabled]="ch.points.fortune >= ch.points.fate" (click)="adjust('fortune', 1)"><mat-icon>add</mat-icon></button>
         }
       </div>
     </div>
     <div class="stat">
-      <span>Détermination</span>
+      <span class="stat-label"><mat-icon class="icon-sm">shield</mat-icon> Résilience</span>
       <div class="counter">
         @if (canEdit()) {
-          <button type="button" aria-label="Dépenser un point de Détermination" [disabled]="ch.points.resolve <= 0" (click)="adjust('resolve', -1)">−</button>
+          <button mat-icon-button type="button" aria-label="Retirer un point de Résilience" [disabled]="ch.points.resilience <= 0" (click)="adjust('resilience', -1)"><mat-icon>remove</mat-icon></button>
         }
-        {{ ch.points.resolve }} / {{ ch.points.resilience }}
+        <span class="stat-value">{{ ch.points.resilience }}</span>
         @if (canEdit()) {
-          <button type="button" aria-label="Récupérer un point de Détermination" [disabled]="ch.points.resolve >= ch.points.resilience" (click)="adjust('resolve', 1)">+</button>
+          <button mat-icon-button type="button" aria-label="Ajouter un point de Résilience" (click)="adjust('resilience', 1)"><mat-icon>add</mat-icon></button>
         }
       </div>
     </div>
-    <div class="stat"><span>Corruption</span>{{ ch.corruption }}</div>
-    <div class="stat"><span>XP dispo.</span>{{ ch.experience.current }}</div>
-    <div class="stat"><span>XP total</span>{{ totalExperience(ch) }}</div>
+    <div class="stat">
+      <span class="stat-label"><mat-icon class="icon-sm">bolt</mat-icon> Détermination</span>
+      <div class="counter">
+        @if (canEdit()) {
+          <button mat-icon-button type="button" aria-label="Dépenser un point de Détermination" [disabled]="ch.points.resolve <= 0" (click)="adjust('resolve', -1)"><mat-icon>remove</mat-icon></button>
+        }
+        <span class="stat-value">{{ ch.points.resolve }}<span class="text-sm text-on-surface-variant"> / {{ ch.points.resilience }}</span></span>
+        @if (canEdit()) {
+          <button mat-icon-button type="button" aria-label="Récupérer un point de Détermination" [disabled]="ch.points.resolve >= ch.points.resilience" (click)="adjust('resolve', 1)"><mat-icon>add</mat-icon></button>
+        }
+      </div>
+    </div>
+    <div class="stat">
+      <span class="stat-label"><mat-icon class="icon-sm">hourglass</mat-icon> Destin</span>
+      <span class="stat-value">{{ ch.points.fate }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label"><mat-icon class="icon-sm">skull</mat-icon> Corruption</span>
+      <span class="stat-value">{{ ch.corruption }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label"><mat-icon class="icon-sm">star</mat-icon> XP dispo.</span>
+      <span class="stat-value">{{ ch.experience.current }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label"><mat-icon class="icon-sm">military_tech</mat-icon> XP total</span>
+      <span class="stat-value">{{ totalExperience(ch) }}</span>
+    </div>
   </section>
 
-  <div class="grid gap-8 lg:grid-cols-2">
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Compétences</h2>
-      <table class="w-full text-sm">
-        <thead class="text-left text-stone-400">
-          <tr><th>Nom</th><th>Carac.</th><th class="text-right">Augm.</th><th class="text-right">Total</th></tr>
-        </thead>
-        <tbody>
-          @for (s of ch.skills; track $index) {
-            <tr class="border-t border-stone-800">
-              <td class="py-1">
-                {{ s.name }}@if (s.specialization) { ({{ s.specialization }}) }
-                @if (s.career) { <span class="text-amber-500" title="Compétence de carrière">●</span> }
-              </td>
-              <td class="uppercase text-stone-400">{{ s.characteristic }}</td>
-              <td class="text-right">{{ s.advances }}</td>
-              <td class="text-right font-bold text-amber-100">
-                <button
-                  type="button"
-                  class="roll-target px-1"
-                  [title]="'Test de ' + s.name"
-                  (click)="rollTest(s.name + (s.specialization ? ' (' + s.specialization + ')' : ''), skillValue(ch, s), s.characteristic)"
-                >
-                  {{ skillValue(ch, s) }}
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </section>
-
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Talents</h2>
-      <ul class="space-y-2">
-        @for (t of ch.talents; track t.name) {
-          <li>
-            <span class="font-semibold text-amber-100">{{ t.name }}</span>
-            @if (t.timesTaken > 1) { ×{{ t.timesTaken }} }
-            <p class="text-sm">{{ t.description }}</p>
-          </li>
-        }
-      </ul>
-    </section>
-
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Armes</h2>
-      <table class="w-full text-sm">
-        <thead class="text-left text-stone-400">
-          <tr><th>Nom</th><th>Groupe</th><th>Allonge/Portée</th><th class="text-right">Dégâts</th></tr>
-        </thead>
-        <tbody>
-          @for (w of ch.weapons; track w.name) {
-            <tr class="border-t border-stone-800">
-              <td class="py-1">
-                {{ w.name }}
-                @if (w.qualities.length) {
-                  <div class="text-xs text-stone-400">{{ w.qualities.join(', ') }}</div>
+  <!-- Détails par onglets -->
+  <mat-card appearance="outlined">
+    <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" animationDuration="150ms">
+      <mat-tab>
+        <ng-template mat-tab-label><mat-icon class="mr-2">psychology</mat-icon> Compétences</ng-template>
+        <div class="grid gap-6 p-4 lg:grid-cols-2">
+          <section>
+            <h2 class="section-title">Compétences</h2>
+            <table class="w-full text-sm">
+              <thead class="text-left text-xs text-on-surface-variant uppercase">
+                <tr><th class="pb-2 font-medium">Nom</th><th class="pb-2 font-medium">Carac.</th><th class="pb-2 text-right font-medium">Augm.</th><th class="pb-2 text-right font-medium">Total</th></tr>
+              </thead>
+              <tbody>
+                @for (s of ch.skills; track $index) {
+                  <tr class="border-t border-outline-variant">
+                    <td class="py-1.5">
+                      {{ s.name }}@if (s.specialization) { <span class="text-on-surface-variant"> ({{ s.specialization }})</span> }
+                      @if (s.career) { <mat-icon class="icon-sm ml-1 align-middle text-primary" title="Compétence de carrière">star</mat-icon> }
+                    </td>
+                    <td class="text-on-surface-variant uppercase">{{ s.characteristic }}</td>
+                    <td class="text-right tabular-nums">{{ s.advances }}</td>
+                    <td class="text-right">
+                      <button
+                        type="button"
+                        matRipple
+                        class="min-w-10 rounded px-2 py-1 font-bold tabular-nums transition hover:bg-primary-container hover:text-on-primary-container"
+                        [title]="'Test de ' + s.name"
+                        (click)="rollTest(s.name + (s.specialization ? ' (' + s.specialization + ')' : ''), skillValue(ch, s), s.characteristic)"
+                      >
+                        {{ skillValue(ch, s) }}
+                      </button>
+                    </td>
+                  </tr>
                 }
-              </td>
-              <td>{{ w.group }}</td>
-              <td>{{ w.reachOrRange }}</td>
-              <td class="text-right font-bold text-amber-100">{{ weaponDamage(ch, w) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+              </tbody>
+            </table>
+          </section>
 
-      <h2 class="mt-6 mb-2 font-serif text-xl text-amber-200">Armures</h2>
-      @for (a of ch.armour; track a.name) {
-        <p class="text-sm">
-          <span class="text-amber-100">{{ a.name }}</span> — PA {{ a.armourPoints }}
-          <span class="text-stone-400">({{ locationList(a.locations) }})</span>
-        </p>
-      } @empty {
-        <p class="text-sm text-stone-400">Aucune.</p>
+          <section>
+            <h2 class="section-title">Talents</h2>
+            <ul class="space-y-3">
+              @for (t of ch.talents; track t.name) {
+                <li class="tile">
+                  <span class="font-semibold">{{ t.name }}</span>
+                  @if (t.timesTaken > 1) { <span class="text-primary"> ×{{ t.timesTaken }}</span> }
+                  <p class="muted mt-1">{{ t.description }}</p>
+                </li>
+              } @empty {
+                <li class="muted">Aucun talent.</li>
+              }
+            </ul>
+          </section>
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label><mat-icon class="mr-2">swords</mat-icon> Équipement</ng-template>
+        <div class="grid gap-6 p-4 lg:grid-cols-2">
+          <section>
+            <h2 class="section-title">Armes</h2>
+            <ul class="space-y-2">
+              @for (w of ch.weapons; track w.name) {
+                <li class="flex items-center gap-3 tile">
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold">{{ w.name }}</div>
+                    <div class="muted">{{ w.group }} · {{ w.reachOrRange }}</div>
+                    @if (w.qualities.length) {
+                      <div class="mt-1 text-xs text-on-surface-variant italic">{{ w.qualities.join(', ') }}</div>
+                    }
+                  </div>
+                  <div class="text-center">
+                    <div class="text-[0.65rem] text-on-surface-variant uppercase">Dégâts</div>
+                    <div class="text-xl font-bold text-primary">{{ weaponDamage(ch, w) }}</div>
+                  </div>
+                </li>
+              } @empty {
+                <li class="muted">Aucune.</li>
+              }
+            </ul>
+
+            <h2 class="section-title mt-6">Armures</h2>
+            <ul class="space-y-2">
+              @for (a of ch.armour; track a.name) {
+                <li class="flex items-center gap-3 tile">
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold">{{ a.name }}</div>
+                    <div class="muted">{{ locationList(a.locations) }}</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-[0.65rem] text-on-surface-variant uppercase">PA</div>
+                    <div class="text-xl font-bold text-primary">{{ a.armourPoints }}</div>
+                  </div>
+                </li>
+              } @empty {
+                <li class="muted">Aucune.</li>
+              }
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="section-title">Possessions</h2>
+            <ul class="divide-y divide-outline-variant">
+              @for (t of ch.trappings; track t.name) {
+                <li class="flex justify-between py-1.5 text-sm">
+                  <span>{{ t.name }}</span>
+                  @if (t.quantity > 1) { <span class="text-on-surface-variant">×{{ t.quantity }}</span> }
+                </li>
+              } @empty {
+                <li class="muted py-1.5">Aucune.</li>
+              }
+            </ul>
+
+            <h2 class="section-title mt-6">Bourse</h2>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="stat"><span class="stat-label">CO</span><span class="stat-value text-amber-600 dark:text-yellow-300">{{ ch.wealth.crowns }}</span></div>
+              <div class="stat"><span class="stat-label">pa</span><span class="stat-value text-slate-500 dark:text-zinc-300">{{ ch.wealth.shillings }}</span></div>
+              <div class="stat"><span class="stat-label">s</span><span class="stat-value text-orange-700 dark:text-orange-400">{{ ch.wealth.pennies }}</span></div>
+            </div>
+          </section>
+        </div>
+      </mat-tab>
+
+      @if (ch.spells.length) {
+        <mat-tab>
+          <ng-template mat-tab-label><mat-icon class="mr-2">auto_fix_high</mat-icon> Sorts</ng-template>
+          <div class="grid gap-3 p-4 sm:grid-cols-2">
+            @for (sp of ch.spells; track sp.name) {
+              <div class="rounded border border-outline-variant bg-surface-container-low p-4 text-sm">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="font-display text-base font-semibold">{{ sp.name }}</p>
+                    <p class="muted">{{ sp.lore }}</p>
+                  </div>
+                  <span class="rounded-full bg-tertiary-container px-2 py-0.5 text-xs font-semibold text-on-tertiary-container">NI {{ sp.castingNumber }}</span>
+                </div>
+                <p class="mt-2 text-xs text-on-surface-variant">Portée {{ sp.range }} · Cible {{ sp.target }} · Durée {{ sp.duration }}</p>
+                <p class="mt-2">{{ sp.effect }}</p>
+              </div>
+            }
+          </div>
+        </mat-tab>
       }
-    </section>
 
-    <section>
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Possessions</h2>
-      <ul class="list-disc pl-5 text-sm">
-        @for (t of ch.trappings; track t.name) {
-          <li>{{ t.name }} @if (t.quantity > 1) { ×{{ t.quantity }} }</li>
-        }
-      </ul>
-      <p class="mt-2 text-sm">
-        {{ ch.wealth.crowns }} CO · {{ ch.wealth.shillings }} pa · {{ ch.wealth.pennies }} s
-      </p>
-    </section>
-
-    @if (ch.spells.length) {
-      <section class="lg:col-span-2">
-        <h2 class="mb-2 font-serif text-xl text-amber-200">Sorts</h2>
-        <div class="grid gap-3 sm:grid-cols-2">
-          @for (sp of ch.spells; track sp.name) {
-            <div class="rounded border border-stone-700 bg-stone-900 p-3 text-sm">
-              <p class="font-semibold text-amber-100">{{ sp.name }} <span class="text-stone-400">— {{ sp.lore }}, NI {{ sp.castingNumber }}</span></p>
-              <p class="text-stone-400">Portée {{ sp.range }} · Cible {{ sp.target }} · Durée {{ sp.duration }}</p>
-              <p class="mt-1">{{ sp.effect }}</p>
+      <mat-tab>
+        <ng-template mat-tab-label><mat-icon class="mr-2">person</mat-icon> Personnage</ng-template>
+        <div class="space-y-4 p-4">
+          <div class="flex flex-wrap gap-2 text-sm">
+            <span class="pill">{{ ch.details.age }} ans</span>
+            <span class="pill">{{ ch.details.height }}</span>
+            <span class="pill">Cheveux {{ ch.details.hair }}</span>
+            <span class="pill">Yeux {{ ch.details.eyes }}</span>
+          </div>
+          <p>{{ ch.details.appearance }}</p>
+          <p class="leading-relaxed text-on-surface-variant">{{ ch.details.background }}</p>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="tile">
+              <div class="stat-label">Motivation</div>
+              <p class="mt-1">{{ ch.points.motivation }}</p>
+            </div>
+            <div class="tile">
+              <div class="stat-label">Ambition courte</div>
+              <p class="mt-1">{{ ch.ambitions.shortTerm }}</p>
+            </div>
+            <div class="tile">
+              <div class="stat-label">Ambition longue</div>
+              <p class="mt-1">{{ ch.ambitions.longTerm }}</p>
+            </div>
+          </div>
+          @if (ch.psychology.length || ch.mutations.length) {
+            <div class="flex flex-wrap gap-2">
+              @for (p of ch.psychology; track p) {
+                <span class="rounded-full bg-error-container px-3 py-1 text-sm text-on-error-container">{{ p }}</span>
+              }
+              @for (m of ch.mutations; track m) {
+                <span class="rounded-full bg-tertiary-container px-3 py-1 text-sm text-on-tertiary-container">{{ m }}</span>
+              }
             </div>
           }
         </div>
-      </section>
-    }
-
-    <section class="lg:col-span-2">
-      <h2 class="mb-2 font-serif text-xl text-amber-200">Personnage</h2>
-      <p class="text-sm text-stone-400">
-        {{ ch.details.age }} ans · {{ ch.details.height }} · cheveux {{ ch.details.hair }} · yeux {{ ch.details.eyes }}
-      </p>
-      <p class="mt-2">{{ ch.details.appearance }}</p>
-      <p class="mt-2">{{ ch.details.background }}</p>
-      <p class="mt-4"><span class="text-stone-400">Motivation :</span> {{ ch.points.motivation }}</p>
-      <p><span class="text-stone-400">Ambition courte :</span> {{ ch.ambitions.shortTerm }}</p>
-      <p><span class="text-stone-400">Ambition longue :</span> {{ ch.ambitions.longTerm }}</p>
-      @for (p of ch.psychology; track p) {
-        <p class="mt-2 text-red-300">{{ p }}</p>
-      }
-    </section>
-  </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
   }
 } @else if (!character.isLoading()) {
   <p class="mt-4">Personnage introuvable.</p>
