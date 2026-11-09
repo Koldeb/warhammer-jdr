@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { Campaign, Session, SessionGmNotes } from '../models/campaign.model';
-import { Character } from '../models/character.model';
+import { Character, NewCharacter } from '../models/character.model';
 import { UserProfile } from '../models/user.model';
 import { enforceLimits } from '../rules/wfrp';
 import { CampaignRepository } from './campaign.repository';
@@ -46,6 +46,30 @@ export class MockCampaignRepository extends CampaignRepository {
     return resolve(this.characters.find((c) => c.id === id && this.canReadCharacter(c)));
   }
 
+  canCreateCharacter(): Promise<boolean> {
+    return resolve(this.mayCreateCharacter());
+  }
+
+  createCharacter(character: NewCharacter): Promise<Character> {
+    const user = this.auth.user();
+    if (!user || !this.mayCreateCharacter()) {
+      return Promise.reject(new Error("Vous n'avez pas le droit de créer un personnage."));
+    }
+    const gm = user.role === 'mj';
+    const created: Character = {
+      ...enforceLimits({ ...character, id: '', campaignId: '' }),
+      id: this.newCharacterId(character.name),
+      campaignId: this.campaign.id,
+      // Un joueur crée toujours sa propre fiche, visible et vivante.
+      playerId: gm ? character.playerId : user.id,
+      hidden: gm ? !!character.hidden : false,
+      deceased: gm ? !!character.deceased : false,
+    };
+    this.characters.push(created);
+    this.persist();
+    return resolve(created);
+  }
+
   updateCharacter(update: Character): Promise<Character> {
     const index = this.characters.findIndex((c) => c.id === update.id);
     const existing = this.characters[index];
@@ -53,15 +77,19 @@ export class MockCampaignRepository extends CampaignRepository {
       return Promise.reject(new Error("Vous n'avez pas le droit de modifier cette fiche."));
     }
     // Les champs de propriété ne sont pas modifiables (équivalent du WITH CHECK de la policy),
-    // et aucune valeur ne peut dépasser son maximum.
+    // et aucune valeur ne peut dépasser son maximum. Seul le MJ change le joueur, le décès et
+    // la visibilité (pour confier à un joueur un personnage qu'il gardait caché, par exemple).
+    const gm = this.auth.isGm();
     const saved: Character = {
       ...enforceLimits(update),
       id: existing.id,
-      playerId: existing.playerId,
+      playerId: gm ? update.playerId : existing.playerId,
       campaignId: existing.campaignId,
+      deceased: gm ? update.deceased : existing.deceased,
+      hidden: gm ? update.hidden : existing.hidden,
     };
     this.characters[index] = saved;
-    storage()?.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(this.characters));
+    this.persist();
     return resolve(saved);
   }
 
@@ -80,7 +108,35 @@ export class MockCampaignRepository extends CampaignRepository {
 
   private canReadCharacter(character: Character): boolean {
     const user = this.auth.user();
-    return !!user && (user.role === 'mj' || character.playerId === user.id);
+    if (!user) return false;
+    return user.role === 'mj' || (character.playerId === user.id && !character.hidden);
+  }
+
+  /** MJ : toujours. Joueur : au moins un personnage mort et aucun en vie. */
+  private mayCreateCharacter(): boolean {
+    const user = this.auth.user();
+    if (!user) return false;
+    if (user.role === 'mj') return true;
+    const own = this.characters.filter((c) => c.playerId === user.id && !c.hidden);
+    return own.some((c) => c.deceased) && !own.some((c) => !c.deceased);
+  }
+
+  /** "Johann Weber" → "johann-weber", suffixé si déjà pris. */
+  private newCharacterId(name: string): string {
+    const base =
+      name
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || 'personnage';
+    let id = base;
+    for (let n = 2; this.characters.some((c) => c.id === id); n++) id = `${base}-${n}`;
+    return id;
+  }
+
+  private persist(): void {
+    storage()?.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(this.characters));
   }
 
   private canWriteCharacter(character: Character): boolean {

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
+import { NewCharacter } from '../models/character.model';
 import { MockCampaignRepository } from './mock-campaign.repository';
 
 describe('MockCampaignRepository — règles d\'accès', () => {
@@ -113,5 +114,89 @@ describe('MockCampaignRepository — plafonds', () => {
     const saved = await repo.updateCharacter(johann);
     expect(saved.points.fortune).toBe(2);
     expect(saved.wounds.current).toBe(12);
+  });
+});
+
+describe('MockCampaignRepository — création et personnages cachés', () => {
+  let repo: MockCampaignRepository;
+  let auth: AuthService;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: [MockCampaignRepository] });
+    repo = TestBed.inject(MockCampaignRepository);
+    auth = TestBed.inject(AuthService);
+  });
+
+  /** Fiche de Thorek sans id, prête à être recréée. */
+  async function template(): Promise<NewCharacter> {
+    auth.impersonate('paul');
+    const { id: _id, campaignId: _c, ...rest } = (await repo.getCharacter('thorek-gromsson'))!;
+    return { ...rest, name: 'Nouvelle recrue' };
+  }
+
+  async function killThorek(): Promise<void> {
+    auth.impersonate('paul');
+    const thorek = (await repo.getCharacter('thorek-gromsson'))!;
+    await repo.updateCharacter({ ...thorek, deceased: true });
+  }
+
+  it('le MJ peut toujours créer un personnage', async () => {
+    auth.impersonate('paul');
+    expect(await repo.canCreateCharacter()).toBe(true);
+  });
+
+  it('un joueur dont le personnage est vivant ne peut pas en créer', async () => {
+    const draft = await template();
+    auth.impersonate('julie');
+    expect(await repo.canCreateCharacter()).toBe(false);
+    await expect(repo.createCharacter(draft)).rejects.toThrow();
+  });
+
+  it('un joueur dont le personnage est mort peut en créer un, une seule fois', async () => {
+    const draft = await template();
+    await killThorek();
+    auth.impersonate('julie');
+    expect(await repo.canCreateCharacter()).toBe(true);
+
+    const created = await repo.createCharacter({ ...draft, playerId: 'antoine', hidden: true, deceased: true });
+    expect(created).toMatchObject({ playerId: 'julie', hidden: false, deceased: false, campaignId: 'cendres-ubersreik' });
+    expect(created.id).toBe('nouvelle-recrue');
+    expect((await repo.getCharacters()).map((c) => c.id)).toEqual(['thorek-gromsson', 'nouvelle-recrue']);
+    expect(await repo.canCreateCharacter()).toBe(false);
+  });
+
+  it('un joueur sans aucun personnage ne peut pas en créer', async () => {
+    auth.impersonate('paul');
+    const thorek = (await repo.getCharacter('thorek-gromsson'))!;
+    await repo.updateCharacter({ ...thorek, playerId: 'paul' });
+    auth.impersonate('julie');
+    expect(await repo.canCreateCharacter()).toBe(false);
+  });
+
+  it('un personnage caché par le MJ est invisible pour son joueur', async () => {
+    const draft = await template();
+    const created = await repo.createCharacter({ ...draft, playerId: 'julie', hidden: true });
+    expect(created.hidden).toBe(true);
+    expect(await repo.getCharacter(created.id)).toBeDefined();
+
+    auth.impersonate('julie');
+    expect(await repo.getCharacter(created.id)).toBeUndefined();
+    expect((await repo.getCharacters()).map((c) => c.id)).toEqual(['thorek-gromsson']);
+  });
+
+  it('un joueur ne peut ni ressusciter ni cacher son personnage', async () => {
+    await killThorek();
+    auth.impersonate('julie');
+    const thorek = (await repo.getCharacter('thorek-gromsson'))!;
+    const saved = await repo.updateCharacter({ ...thorek, deceased: false, hidden: true });
+    expect(saved).toMatchObject({ deceased: true, hidden: undefined });
+  });
+
+  it('les identifiants créés sont uniques', async () => {
+    const draft = await template();
+    const a = await repo.createCharacter(draft);
+    const b = await repo.createCharacter(draft);
+    expect([a.id, b.id]).toEqual(['nouvelle-recrue', 'nouvelle-recrue-2']);
   });
 });

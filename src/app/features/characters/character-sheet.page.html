@@ -17,15 +17,39 @@
           <span class="pill !border-transparent !bg-primary-container !text-xs font-semibold text-on-primary-container">
             Statut {{ tierLabels[ch.career.status.tier] }} {{ ch.career.status.standing }}
           </span>
+          @if (ch.deceased) {
+            <span class="pill !text-xs"><mat-icon class="icon-sm">skull</mat-icon> Décédé</span>
+          }
+          @if (ch.hidden) {
+            <span class="pill !text-xs"><mat-icon class="icon-sm">visibility_off</mat-icon> Caché aux joueurs</span>
+          }
         </div>
       </div>
-      @if (canEdit() && !editing()) {
-        <button mat-flat-button type="button" class="btn-gradient self-start sm:self-center" (click)="editing.set(true)">
-          <mat-icon>edit</mat-icon> Modifier la fiche
-        </button>
-      }
+      <div class="flex flex-wrap gap-2 self-start sm:flex-col sm:self-center">
+        @if (canEdit() && !editing()) {
+          <button mat-flat-button type="button" class="btn-gradient" (click)="editing.set(true)">
+            <mat-icon>edit</mat-icon> Modifier la fiche
+          </button>
+        }
+        @if (isGm() && !editing()) {
+          <button mat-stroked-button type="button" [disabled]="saving()" (click)="toggleFlag('deceased')">
+            <mat-icon>{{ ch.deceased ? 'favorite' : 'skull' }}</mat-icon> {{ ch.deceased ? 'Ramener à la vie' : 'Marquer comme décédé' }}
+          </button>
+          <button mat-stroked-button type="button" [disabled]="saving()" (click)="toggleFlag('hidden')">
+            <mat-icon>{{ ch.hidden ? 'visibility' : 'visibility_off' }}</mat-icon> {{ ch.hidden ? 'Montrer aux joueurs' : 'Cacher aux joueurs' }}
+          </button>
+        }
+      </div>
     </div>
   </header>
+
+  @if (ch.deceased && canCreate.value() && !isGm()) {
+    <div class="alert alert-info mb-4" role="status">
+      <mat-icon class="shrink-0">sentiment_sad</mat-icon>
+      <span class="flex-1">Ce personnage est mort. Vous pouvez créer un nouveau personnage.</span>
+      <a mat-button routerLink="/personnages/nouveau"><mat-icon>person_add</mat-icon> Nouveau personnage</a>
+    </div>
+  }
 
   @if (saveError(); as err) {
     <div class="alert alert-error mb-4" role="alert" animate.enter="anim-shake" animate.leave="anim-fade-out">

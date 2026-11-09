@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, resource } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -9,7 +10,7 @@ import { SpotlightDirective } from '../../shared/spotlight.directive';
 
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink, DatePipe, MatIconModule, SpotlightDirective],
+  imports: [RouterLink, DatePipe, MatButtonModule, MatIconModule, SpotlightDirective],
   templateUrl: './home.page.html',
 })
 export class HomePage {
@@ -20,6 +21,7 @@ export class HomePage {
   protected readonly maxWounds = maxWounds;
   protected readonly campaign = resource({ loader: () => this.repo.getCampaign() });
   protected readonly characters = resource({ loader: () => this.repo.getCharacters() });
+  protected readonly canCreate = resource({ loader: () => this.repo.canCreateCharacter() });
   protected readonly sessions = resource({ loader: () => this.repo.getSessions() });
   protected readonly lastSession = computed(() => this.sessions.value()?.[0]);
 

@@ -63,6 +63,13 @@ export class CharacterSheetPage {
     return !!user && !!ch && (user.role === 'mj' || ch.playerId === user.id);
   });
 
+  protected readonly isGm = this.auth.isGm;
+  /** Un joueur dont le personnage est mort peut en créer un nouveau (vérifié seulement dans ce cas). */
+  protected readonly canCreate = resource({
+    params: () => this.character.value()?.deceased || undefined,
+    loader: () => this.repo.canCreateCharacter(),
+  });
+
   protected readonly editing = signal(false);
   protected readonly saving = signal(false);
   protected readonly saveError = signal<string | null>(null);
@@ -146,6 +153,13 @@ export class CharacterSheetPage {
       this.character.reload();
       return false;
     }
+  }
+
+  /** MJ : marque le personnage comme mort / vivant, ou le cache / montre aux joueurs. */
+  protected toggleFlag(flag: 'deceased' | 'hidden'): Promise<void> {
+    const ch = this.character.value();
+    if (!ch) return Promise.resolve();
+    return this.save({ ...ch, [flag]: !ch[flag] });
   }
 
   protected async save(update: Character): Promise<void> {

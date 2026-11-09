@@ -1,0 +1,450 @@
+@let d = draft;
+@let def = speciesDefs[d.species];
+@let c = career();
+
+<a mat-button routerLink="/" class="-ml-3">
+  <mat-icon>arrow_back</mat-icon> Groupe
+</a>
+
+<!-- En-tête -->
+<header class="relative mt-3 mb-6 overflow-hidden rounded border border-outline-variant p-5 sm:p-6" style="background: var(--brand-gradient-soft); box-shadow: var(--shadow-sm)">
+  <div class="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full opacity-25 blur-3xl" style="background: var(--brand-gradient)" aria-hidden="true"></div>
+  <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div class="min-w-0 flex-1">
+      <p class="eyebrow">Création de personnage</p>
+      <h1 class="page-title mt-1">{{ d.name.trim() || 'Nouveau personnage' }}</h1>
+      <p class="muted mt-1">
+        {{ speciesLabels[d.species] }}@if (c) { · {{ c.name }} — {{ c.title }} }
+      </p>
+      <div class="mt-3 flex flex-wrap gap-2 text-xs">
+        <span class="pill !border-transparent !bg-primary-container !text-xs font-semibold text-on-primary-container">
+          <mat-icon class="icon-sm">star</mat-icon> {{ creationXp(d) }} XP de départ
+        </span>
+      </div>
+    </div>
+    <button mat-flat-button type="button" class="btn-gradient self-start sm:self-center" (click)="randomizeAll()">
+      <mat-icon>casino</mat-icon> Tout au hasard
+    </button>
+  </div>
+</header>
+
+<div class="dense-form">
+<mat-stepper [orientation]="vertical() ? 'vertical' : 'horizontal'" labelPosition="bottom" class="!bg-transparent">
+  <!-- 1. Espèce -->
+  <mat-step label="Espèce" [completed]="valid.species()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-4 flex flex-wrap items-center gap-3">
+          <h2 class="section-title !mb-0"><mat-icon>diversity_3</mat-icon> Espèce</h2>
+          <button mat-stroked-button type="button" class="ml-auto" (click)="rollSpecies()">
+            <mat-icon>casino</mat-icon> Tirer au hasard (+{{ xp.species }} XP)
+          </button>
+        </div>
+        <mat-button-toggle-group class="flex-wrap" [value]="d.species" (change)="chooseSpecies($event.value)" aria-label="Espèce">
+          @for (s of speciesList; track s[0]) {
+            <mat-button-toggle [value]="s[0]">{{ s[1] }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+        @if (d.speciesRolled) {
+          <p class="alert alert-info mt-3" animate.enter="anim-fade-up"><mat-icon class="shrink-0">casino</mat-icon> Espèce tirée au hasard : +{{ xp.species }} XP.</p>
+        }
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+          <div class="stat"><div class="stat-label">Destin / Résilience</div><div class="font-bold">{{ def.fate }} / {{ def.resilience }} <span class="muted">+ {{ def.extraPoints }} à répartir</span></div></div>
+          <div class="stat"><div class="stat-label">Mouvement</div><div class="font-bold">{{ def.movement }}</div></div>
+          <div class="stat"><div class="stat-label">Talents aléatoires</div><div class="font-bold">{{ def.randomTalents }}</div></div>
+        </div>
+        <div class="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10">
+          @for (ch of characteristics; track ch.key) {
+            <div class="rounded bg-surface-container-low px-2 py-1.5 text-center" [title]="ch.label">
+              <div class="text-[0.65rem] font-medium text-on-surface-variant uppercase">{{ ch.abbr }}</div>
+              <div class="font-bold tabular-nums">{{ def.base[ch.key] }}<span class="text-xs text-on-surface-variant">+2d10</span></div>
+            </div>
+          }
+        </div>
+        <p class="muted mt-4"><strong>Compétences :</strong> {{ def.skills.join(', ') }}</p>
+        <p class="muted mt-1">
+          <strong>Talents :</strong>
+          @for (t of def.talents; track $index) {
+            {{ isChoice(t) ? t.join(' ou ') : t }}{{ $last ? '' : ', ' }}
+          }
+          @if (def.randomTalents) { , {{ def.randomTalents }} talents aléatoires }
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="end"><button mat-flat-button matStepperNext type="button">Suivant</button></mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 2. Carrière -->
+  <mat-step label="Carrière" [completed]="valid.career()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <h2 class="section-title !mb-0 mr-auto"><mat-icon>work</mat-icon> Carrière</h2>
+          <button mat-stroked-button type="button" (click)="rollOneCareer()"><mat-icon>casino</mat-icon> 1 tirage (+{{ xp.career.tirage }} XP)</button>
+          <button mat-stroked-button type="button" (click)="rollThreeCareers()"><mat-icon>casino</mat-icon> Choisir parmi 3 (+{{ xp.career.tirage3 }} XP)</button>
+        </div>
+
+        @if (d.careerMethod === 'tirage3' && d.careerRolls.length) {
+          <p class="muted mb-2">Choisissez une des carrières tirées :</p>
+          <div class="mb-4 grid gap-2 sm:grid-cols-3" animate.enter="anim-fade-up">
+            @for (rc of rolledCareers(); track rc.name) {
+              <button type="button" class="edit-row pressable text-left" [class.!border-primary]="d.careerName === rc.name" [attr.aria-pressed]="d.careerName === rc.name" (click)="pickRolledCareer(rc.name)">
+                <div class="font-bold">{{ rc.name }}</div>
+                <div class="muted text-sm">{{ rc.class }} · {{ rc.title }}</div>
+              </button>
+            }
+          </div>
+        } @else if (d.careerMethod === 'tirage' && c) {
+          <p class="alert alert-info mb-4" animate.enter="anim-fade-up"><mat-icon class="shrink-0">casino</mat-icon> Carrière tirée : {{ c.name }}, acceptée telle quelle (+{{ xp.career.tirage }} XP).</p>
+        }
+
+        <mat-form-field class="w-full sm:w-96">
+          <mat-label>Choix libre (sans bonus d'XP)</mat-label>
+          <mat-select [value]="d.careerMethod === 'choix' ? d.careerName : null" (selectionChange)="chooseCareer($event.value)">
+            @for (g of careerGroups(); track g.name) {
+              <mat-optgroup [label]="g.name">
+                @for (opt of g.careers; track opt.name) { <mat-option [value]="opt.name">{{ opt.name }} — {{ opt.title }}</mat-option> }
+              </mat-optgroup>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (c) {
+          <div class="mt-4 rounded border border-outline-variant p-4" animate.enter="anim-fade-up">
+            <p class="eyebrow">{{ c.class }}</p>
+            <h3 class="text-lg font-bold">{{ c.name }} — {{ c.title }}</h3>
+            <div class="mt-2 flex flex-wrap gap-2 text-xs">
+              <span class="pill !text-xs">Statut {{ tierLabels[c.status.tier] }} {{ c.status.standing }}</span>
+              @for (k of c.characteristics; track k) {
+                <span class="pill !text-xs" [title]="characteristicLabel(k)">{{ characteristicAbbr(k) }}</span>
+              }
+            </div>
+            <p class="muted mt-3"><strong>Compétences :</strong> {{ c.skills.join(', ') }}</p>
+            <p class="muted mt-1"><strong>Talents :</strong> {{ c.talents.join(', ') }}</p>
+            <p class="muted mt-1"><strong>Possessions :</strong> {{ c.trappings.join(', ') || '—' }}</p>
+          </div>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button matStepperNext type="button">Suivant</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 3. Caractéristiques -->
+  <mat-step label="Caractéristiques" [completed]="valid.characteristics()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <h2 class="section-title !mb-0 mr-auto"><mat-icon>casino</mat-icon> Caractéristiques</h2>
+          <button mat-stroked-button type="button" (click)="rollCharacteristics()"><mat-icon>casino</mat-icon> Lancer 2d10</button>
+          <button mat-stroked-button type="button" (click)="usePoints()"><mat-icon>tune</mat-icon> Répartir {{ limits.points }} points</button>
+        </div>
+
+        <p class="alert alert-info mb-4">
+          <mat-icon class="shrink-0">info</mat-icon>
+          @switch (d.characteristicMethod) {
+            @case ('tirage') { Tirage gardé tel quel : +{{ xp.characteristics.tirage }} XP. Cliquez sur deux tirages pour les échanger (+{{ xp.characteristics.echange }} XP au lieu de {{ xp.characteristics.tirage }}). }
+            @case ('echange') { Tirages échangés : +{{ xp.characteristics.echange }} XP. Cliquez sur deux tirages pour les échanger à nouveau. }
+            @case ('relance') { Nouveau tirage : pas de bonus d'XP. }
+            @case ('points') { Répartissez {{ limits.points }} points, de {{ limits.pointMin }} à {{ limits.pointMax }} par caractéristique (pas de bonus d'XP). Reste : {{ limits.points - pointsSpent(d) }}. }
+          }
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          @for (ch of characteristics; track ch.key) {
+            <div class="edit-row !p-2 text-center" [class.!border-primary]="swapping() === ch.key">
+              <div class="font-display text-sm font-semibold text-primary" [title]="ch.label">{{ ch.abbr }}</div>
+              <div class="muted text-xs">{{ def.base[ch.key] }} +</div>
+              @if (d.characteristicMethod === 'points') {
+                <mat-form-field class="mt-1 w-full">
+                  <mat-label>Points</mat-label>
+                  <input matInput type="number" [min]="limits.pointMin" [max]="limits.pointMax" [(ngModel)]="d.rolls[ch.key]" />
+                </mat-form-field>
+              } @else if (canSwap()) {
+                <button mat-stroked-button type="button" class="mt-1 w-full" [attr.aria-pressed]="swapping() === ch.key" [attr.aria-label]="'Échanger le tirage de ' + ch.label" (click)="swap(ch.key)">{{ d.rolls[ch.key] }}</button>
+              } @else {
+                <div class="mt-1 font-bold tabular-nums">{{ d.rolls[ch.key] }}</div>
+              }
+              <div class="mt-2 font-display text-2xl font-extrabold tabular-nums">{{ total(ch.key) }}</div>
+              <div class="muted text-xs">Bonus {{ bonus(total(ch.key)) }}</div>
+            </div>
+          }
+        </div>
+
+        @if (c) {
+          <div class="mt-6 flex flex-wrap items-center gap-2">
+            <h3 class="mr-auto font-bold">Augmentations de carrière <span class="muted font-normal">({{ advancesSpent(d) }} / {{ limits.advances }})</span></h3>
+            <button mat-button type="button" (click)="randomAdvances()"><mat-icon>casino</mat-icon> Au hasard</button>
+          </div>
+          <div class="mt-2 grid gap-2 sm:grid-cols-3">
+            @for (k of c.characteristics; track k) {
+              <div class="edit-row flex items-center gap-2">
+                <span class="flex-1 font-semibold">{{ characteristicLabel(k) }}</span>
+                <button mat-icon-button type="button" aria-label="Retirer une augmentation" (click)="adjustAdvance(k, -1)"><mat-icon>remove</mat-icon></button>
+                <span class="w-6 text-center font-bold tabular-nums">{{ d.characteristicAdvances[k] ?? 0 }}</span>
+                <button mat-icon-button type="button" aria-label="Ajouter une augmentation" (click)="adjustAdvance(k, 1)"><mat-icon>add</mat-icon></button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="muted mt-6">Choisissez une carrière pour répartir ses {{ limits.advances }} augmentations.</p>
+        }
+
+        <h3 class="mt-6 font-bold">Destin et Résilience <span class="muted font-normal">({{ def.extraPoints }} points supplémentaires)</span></h3>
+        <div class="mt-2 flex flex-wrap items-center gap-4">
+          <div class="stat min-w-32"><div class="stat-label">Destin</div><div class="font-display text-2xl font-extrabold">{{ fate() }}</div></div>
+          <div class="flex gap-1">
+            <button mat-stroked-button type="button" [disabled]="d.extraFate === 0" (click)="adjustExtraFate(-1)"><mat-icon>arrow_forward</mat-icon> Résilience</button>
+            <button mat-stroked-button type="button" [disabled]="d.extraFate === def.extraPoints" (click)="adjustExtraFate(1)"><mat-icon>arrow_back</mat-icon> Destin</button>
+          </div>
+          <div class="stat min-w-32"><div class="stat-label">Résilience</div><div class="font-display text-2xl font-extrabold">{{ resilience() }}</div></div>
+          <div class="stat min-w-32"><div class="stat-label">Blessures</div><div class="font-display text-2xl font-extrabold">{{ maxWounds() }}</div></div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button matStepperNext type="button">Suivant</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 4. Compétences -->
+  <mat-step label="Compétences" [completed]="valid.skills()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <h2 class="section-title !mb-0 mr-auto"><mat-icon>psychology</mat-icon> Compétences d'espèce</h2>
+          <span class="muted">+5 : {{ speciesSkillCount(d, 5) }}/{{ limits.speciesSkills[5] }} · +3 : {{ speciesSkillCount(d, 3) }}/{{ limits.speciesSkills[3] }}</span>
+          <button mat-button type="button" (click)="randomSpeciesSkills()"><mat-icon>casino</mat-icon> Au hasard</button>
+        </div>
+        <div class="grid gap-2 md:grid-cols-2">
+          @for (ref of def.skills; track ref) {
+            <div class="edit-row flex flex-wrap items-center gap-2">
+              <span class="min-w-0 flex-1">{{ ref }}</span>
+              <mat-button-toggle-group hideSingleSelectionIndicator [value]="d.speciesSkills[ref]" (change)="setSpeciesSkill(ref, $event.value)" [attr.aria-label]="'Augmentations de ' + ref">
+                <mat-button-toggle [value]="0">0</mat-button-toggle>
+                <mat-button-toggle [value]="3" [disabled]="speciesSkillFull(ref, 3)">+3</mat-button-toggle>
+                <mat-button-toggle [value]="5" [disabled]="speciesSkillFull(ref, 5)">+5</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+          }
+        </div>
+
+        @if (c) {
+          <div class="mt-6 mb-2 flex flex-wrap items-center gap-2">
+            <h2 class="section-title !mb-0 mr-auto"><mat-icon>work</mat-icon> Compétences de carrière</h2>
+            <span class="muted">{{ careerSkillsSpent(d) }} / {{ limits.careerSkills }} (max {{ limits.careerSkillMax }} chacune)</span>
+            <button mat-button type="button" (click)="randomCareerSkills()"><mat-icon>casino</mat-icon> Au hasard</button>
+          </div>
+          <div class="grid gap-2 md:grid-cols-2">
+            @for (ref of c.skills; track ref) {
+              <div class="edit-row flex items-center gap-2">
+                <span class="min-w-0 flex-1">{{ ref }}</span>
+                <button mat-icon-button type="button" aria-label="Retirer une augmentation" (click)="adjustCareerSkill(ref, -5)"><mat-icon>keyboard_double_arrow_left</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Retirer une augmentation" (click)="adjustCareerSkill(ref, -1)"><mat-icon>remove</mat-icon></button>
+                <span class="w-6 text-center font-bold tabular-nums">{{ d.careerSkills[ref] }}</span>
+                <button mat-icon-button type="button" aria-label="Ajouter une augmentation" (click)="adjustCareerSkill(ref, 1)"><mat-icon>add</mat-icon></button>
+                <button mat-icon-button type="button" aria-label="Ajouter 5 augmentations" (click)="adjustCareerSkill(ref, 5)"><mat-icon>keyboard_double_arrow_right</mat-icon></button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="muted mt-6">Choisissez une carrière pour répartir ses {{ limits.careerSkills }} augmentations de compétences.</p>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button matStepperNext type="button">Suivant</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 5. Talents -->
+  <mat-step label="Talents" [completed]="valid.talents()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <h2 class="section-title !mb-0 mr-auto"><mat-icon>workspace_premium</mat-icon> Talents d'espèce</h2>
+          <button mat-button type="button" (click)="randomSpeciesTalentChoices()"><mat-icon>casino</mat-icon> Choix au hasard</button>
+        </div>
+        <div class="space-y-2">
+          @for (t of def.talents; track $index; let i = $index) {
+            <div class="edit-row">
+              @if (isChoice(t)) {
+                <mat-radio-group class="flex flex-wrap gap-4" [value]="d.talentChoices[i]" (change)="d.talentChoices[i] = $event.value" [attr.aria-label]="t.join(' ou ')">
+                  @for (option of t; track option) {
+                    <mat-radio-button [value]="option">{{ option }} <span class="muted text-sm">— {{ talentDescription(option) }}</span></mat-radio-button>
+                  }
+                </mat-radio-group>
+              } @else {
+                <span class="font-semibold">{{ t }}</span> <span class="muted text-sm">— {{ talentDescription(t) }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (def.randomTalents) {
+          <div class="mt-6 mb-2 flex flex-wrap items-center gap-2">
+            <h3 class="mr-auto font-bold">Talents aléatoires ({{ def.randomTalents }})</h3>
+            <button mat-stroked-button type="button" (click)="rollRandomTalents()"><mat-icon>casino</mat-icon> Tirer</button>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-3">
+            @for (slot of randomTalentSlots(); track slot) {
+              <mat-form-field>
+                <mat-label>Talent {{ slot + 1 }}</mat-label>
+                <mat-select [value]="d.randomTalents[slot]" (selectionChange)="setRandomTalent(slot, $event.value)">
+                  @for (t of randomTalentTable; track t) {
+                    <mat-option [value]="t" [disabled]="speciesTalents(d).includes(t) && d.randomTalents[slot] !== t">{{ t }}</mat-option>
+                  }
+                </mat-select>
+                @if (d.randomTalents[slot]; as rt) { <mat-hint>{{ talentDescription(rt) }}</mat-hint> }
+              </mat-form-field>
+            }
+          </div>
+        }
+
+        @if (c) {
+          <div class="mt-6 mb-2 flex flex-wrap items-center gap-2">
+            <h2 class="section-title !mb-0 mr-auto"><mat-icon>work</mat-icon> Talent de carrière (1 au choix)</h2>
+            <button mat-button type="button" (click)="randomCareerTalent()"><mat-icon>casino</mat-icon> Au hasard</button>
+          </div>
+          <mat-radio-group class="grid gap-2 sm:grid-cols-2" [(ngModel)]="d.careerTalent" aria-label="Talent de carrière">
+            @for (t of c.talents; track t) {
+              <mat-radio-button class="edit-row" [value]="t" [disabled]="ownedBySpecies(t)">
+                <span class="font-semibold">{{ t }}</span>
+                <span class="muted block text-sm">{{ ownedBySpecies(t) ? 'Déjà acquis par l’espèce' : talentDescription(t) }}</span>
+              </mat-radio-button>
+            }
+          </mat-radio-group>
+        }
+
+        @if (pendingSpecializations().length) {
+          <h3 class="mt-6 font-bold">Spécialisations à préciser <span class="muted font-normal">(facultatif, modifiable plus tard)</span></h3>
+          <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            @for (ref of pendingSpecializations(); track ref) {
+              <mat-form-field>
+                <mat-label>{{ ref }}</mat-label>
+                <input matInput [(ngModel)]="d.specializations[ref]" />
+              </mat-form-field>
+            }
+          </div>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button matStepperNext type="button">Suivant</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 6. Détails -->
+  <mat-step label="Détails" [completed]="valid.details()">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <h2 class="section-title !mb-0 mr-auto"><mat-icon>badge</mat-icon> Identité</h2>
+          <button mat-button type="button" (click)="rollAppearance()"><mat-icon>casino</mat-icon> Âge, taille, cheveux, yeux</button>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <mat-form-field class="sm:col-span-2">
+            <mat-label>Nom</mat-label>
+            <input matInput required [(ngModel)]="d.name" />
+            <button mat-icon-button matSuffix type="button" aria-label="Nom au hasard" (click)="rollName()"><mat-icon>casino</mat-icon></button>
+          </mat-form-field>
+          <mat-form-field><mat-label>Âge</mat-label><input matInput type="number" min="0" [(ngModel)]="d.details.age" /></mat-form-field>
+          <mat-form-field><mat-label>Taille</mat-label><input matInput [(ngModel)]="d.details.height" /></mat-form-field>
+          <mat-form-field><mat-label>Cheveux</mat-label><input matInput [(ngModel)]="d.details.hair" /></mat-form-field>
+          <mat-form-field><mat-label>Yeux</mat-label><input matInput [(ngModel)]="d.details.eyes" /></mat-form-field>
+          <mat-form-field class="sm:col-span-2">
+            <mat-label>Motivation</mat-label>
+            <input matInput [(ngModel)]="d.motivation" />
+            <button mat-icon-button matSuffix type="button" aria-label="Motivation au hasard" (click)="rollMotivation()"><mat-icon>casino</mat-icon></button>
+          </mat-form-field>
+          <mat-form-field class="sm:col-span-2 lg:col-span-4"><mat-label>Apparence</mat-label><textarea matInput rows="2" [(ngModel)]="d.details.appearance"></textarea></mat-form-field>
+          <mat-form-field class="sm:col-span-2 lg:col-span-4"><mat-label>Histoire</mat-label><textarea matInput rows="3" [(ngModel)]="d.details.background"></textarea></mat-form-field>
+          <mat-form-field class="sm:col-span-2"><mat-label>Ambition à court terme</mat-label><input matInput [(ngModel)]="d.ambitions.shortTerm" /></mat-form-field>
+          <mat-form-field class="sm:col-span-2"><mat-label>Ambition à long terme</mat-label><input matInput [(ngModel)]="d.ambitions.longTerm" /></mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button matStepperNext type="button">Suivant</button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+
+  <!-- 7. Récapitulatif -->
+  <mat-step label="Récapitulatif">
+    <mat-card appearance="outlined" class="mt-4">
+      <mat-card-content>
+        <h2 class="section-title"><mat-icon>fact_check</mat-icon> Récapitulatif</h2>
+
+        <div class="grid gap-3 sm:grid-cols-4">
+          <div class="stat"><div class="stat-label">Espèce</div><div class="font-bold">{{ speciesLabels[d.species] }}</div></div>
+          <div class="stat"><div class="stat-label">Carrière</div><div class="font-bold">{{ c ? c.name + ' — ' + c.title : '—' }}</div></div>
+          <div class="stat"><div class="stat-label">Destin / Résilience / Blessures</div><div class="font-bold">{{ fate() }} / {{ resilience() }} / {{ maxWounds() }}</div></div>
+          <div class="stat">
+            <div class="stat-label">XP de départ</div>
+            <div class="font-bold">{{ creationXp(d) }}</div>
+            <div class="muted text-xs">
+              Espèce {{ d.speciesRolled ? xp.species : 0 }} · Carrière {{ xp.career[d.careerMethod] }} · Carac. {{ xp.characteristics[d.characteristicMethod] }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10">
+          @for (ch of characteristics; track ch.key) {
+            <div class="rounded bg-surface-container-low px-2 py-1.5 text-center" [title]="ch.label">
+              <div class="text-[0.65rem] font-medium text-on-surface-variant uppercase">{{ ch.abbr }}</div>
+              <div class="font-bold tabular-nums">{{ total(ch.key) }}</div>
+            </div>
+          }
+        </div>
+
+        <p class="muted mt-4">
+          <strong>Talents :</strong>
+          {{ allTalents().join(', ') || '—' }}
+        </p>
+
+        @if (auth.isGm()) {
+          <div class="mt-6 rounded border border-outline-variant p-4">
+            <h3 class="mb-3 font-bold"><mat-icon class="icon-sm mr-1 align-middle text-primary">shield_person</mat-icon> Options du MJ</h3>
+            <div class="flex flex-wrap items-center gap-4">
+              <mat-form-field class="w-full sm:w-64">
+                <mat-label>Joueur</mat-label>
+                <mat-select [(ngModel)]="playerId">
+                  @for (p of profiles.value() ?? []; track p.id) {
+                    <mat-option [value]="p.id">{{ p.displayName }}{{ p.role === 'mj' ? ' (MJ)' : '' }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-slide-toggle [(ngModel)]="hidden">Cacher aux joueurs (visible par le MJ uniquement)</mat-slide-toggle>
+            </div>
+          </div>
+        }
+
+        @if (problems().length) {
+          <div class="alert alert-info mt-6" role="status">
+            <mat-icon class="shrink-0">checklist</mat-icon>
+            <ul class="list-disc pl-4">
+              @for (p of problems(); track p) { <li>{{ p }}</li> }
+            </ul>
+          </div>
+        }
+        @if (error(); as err) {
+          <div class="alert alert-error mt-4" role="alert" animate.enter="anim-shake"><mat-icon class="shrink-0">error</mat-icon> {{ err }}</div>
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button matStepperPrevious type="button">Retour</button>
+        <button mat-flat-button type="button" class="btn-gradient" [disabled]="problems().length > 0 || saving()" (click)="create()">
+          <mat-icon>person_add</mat-icon> Créer le personnage
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </mat-step>
+</mat-stepper>
+</div>

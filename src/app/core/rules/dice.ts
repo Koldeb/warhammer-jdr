@@ -25,11 +25,25 @@ export interface TestResult {
   fumble: boolean;
 }
 
-/** Jet de d100 : 1 à 100. */
-export function rollD100(): number {
+/** Jet d'un dé à `sides` faces : 1 à sides. */
+export type DieRoller = (sides: number) => number;
+
+export const rollDie: DieRoller = (sides) => {
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
-  return (buf[0] % 100) + 1;
+  return (buf[0] % sides) + 1;
+};
+
+/** Jet de d100 : 1 à 100. */
+export function rollD100(): number {
+  return rollDie(100);
+}
+
+/** Somme de `count` dés à `sides` faces (2d10 → rollDice(2, 10)). */
+export function rollDice(count: number, sides: number, roll: DieRoller = rollDie): number {
+  let total = 0;
+  for (let i = 0; i < count; i++) total += roll(sides);
+  return total;
 }
 
 /**

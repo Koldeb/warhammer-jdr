@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { authGuard, characterCreationGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   // Pages plein écran, sans barre de navigation (data.bare, voir App).
@@ -24,6 +24,13 @@ export const routes: Routes = [
         path: '',
         title: 'Groupe',
         loadComponent: () => import('./features/home/home.page').then((m) => m.HomePage),
+      },
+      {
+        path: 'personnages/nouveau',
+        title: 'Nouveau personnage',
+        canActivate: [characterCreationGuard],
+        loadComponent: () =>
+          import('./features/characters/creation/character-creation.page').then((m) => m.CharacterCreationPage),
       },
       {
         path: 'personnages/:id',

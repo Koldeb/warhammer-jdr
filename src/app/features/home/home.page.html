@@ -51,11 +51,19 @@
     <h2 id="titre-personnages" class="section-title !mb-0 text-2xl">
       <mat-icon>groups</mat-icon> {{ auth.isGm() ? 'Personnages' : 'Mes personnages' }}
     </h2>
+    @if (canCreate.value()) {
+      <a mat-flat-button routerLink="/personnages/nouveau" class="btn-gradient">
+        <mat-icon>person_add</mat-icon> Nouveau personnage
+      </a>
+    }
   </div>
+  @if (canCreate.value() && !auth.isGm()) {
+    <p class="alert alert-info mb-4"><mat-icon class="shrink-0">sentiment_sad</mat-icon> Votre personnage est mort. Vous pouvez en créer un nouveau.</p>
+  }
   <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @for (ch of characters.value() ?? []; track ch.id; let i = $index) {
       <li class="stagger" [style.--i]="i">
-        <a [routerLink]="['/personnages', ch.id]" appSpotlight class="card-link group flex h-full flex-col gap-4">
+        <a [routerLink]="['/personnages', ch.id]" appSpotlight class="card-link group flex h-full flex-col gap-4" [class.opacity-60]="ch.deceased">
           <div class="flex items-center gap-3">
             <span class="avatar h-14 w-14 text-xl" [style.view-transition-name]="'avatar-' + ch.id">{{ ch.name.charAt(0) }}</span>
             <div class="min-w-0 flex-1">
@@ -82,6 +90,12 @@
 
           <div class="mt-auto flex flex-wrap items-center gap-2 text-xs">
             <span class="rounded-full bg-primary-container px-2.5 py-1 font-medium text-on-primary-container">{{ ch.career.name }}</span>
+            @if (ch.deceased) {
+              <span class="pill !text-xs"><mat-icon class="icon-sm">skull</mat-icon> Décédé</span>
+            }
+            @if (ch.hidden) {
+              <span class="pill !text-xs"><mat-icon class="icon-sm">visibility_off</mat-icon> Caché</span>
+            }
             @if (auth.isGm()) {
               <span class="ml-auto text-on-surface-variant">Joué par {{ playerNames().get(ch.playerId) }}</span>
             }

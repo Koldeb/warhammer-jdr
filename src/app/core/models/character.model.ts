@@ -95,6 +95,10 @@ export interface Character {
   campaignId: string;
   /** Id du profil du joueur propriétaire de la fiche. */
   playerId: string;
+  /** Personnage mort : son joueur peut alors en créer un nouveau. Modifiable par le MJ seulement. */
+  deceased?: boolean;
+  /** Visible uniquement par le MJ (personnage en réserve, PNJ...). Modifiable par le MJ seulement. */
+  hidden?: boolean;
   name: string;
   species: Species;
   career: Career;
@@ -129,3 +133,6 @@ export interface Character {
   /** Monnaie : couronnes d'or, pistoles d'argent, sous de cuivre. */
   wealth: { crowns: number; shillings: number; pennies: number };
 }
+
+/** Fiche à créer : l'identifiant et la campagne sont attribués par le repository. */
+export type NewCharacter = Omit<Character, 'id' | 'campaignId'>;
