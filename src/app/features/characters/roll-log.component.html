@@ -1,44 +1,53 @@
 @if (rolls().length) {
   <aside
-    class="fixed inset-x-2 bottom-2 z-30 max-h-[45dvh] overflow-y-auto rounded border border-outline-variant bg-surface-container-high/95 p-3 shadow-2xl backdrop-blur sm:inset-x-auto sm:right-4 sm:bottom-4 sm:max-h-[70dvh] sm:w-80"
-    aria-live="polite"
+    class="glass fixed inset-x-2 bottom-2 z-30 max-h-[45dvh] overflow-y-auto rounded border border-outline-variant bg-surface-container-lowest/85 p-3 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:max-h-[70dvh] sm:w-84"
+    style="box-shadow: var(--shadow-lg)"
+    aria-labelledby="titre-jets"
+    animate.enter="anim-slide-in"
+    animate.leave="anim-fade-out"
   >
     <div class="mb-2 flex items-center justify-between">
-      <h2 class="flex items-center gap-2 font-display text-primary"><mat-icon class="icon-sm">casino</mat-icon> Jets de dés</h2>
+      <h2 id="titre-jets" class="flex items-center gap-2 font-display font-bold">
+        <span class="avatar h-7 w-7"><mat-icon class="icon-sm" aria-hidden="true">casino</mat-icon></span> Jets de dés
+      </h2>
       <button mat-button type="button" (click)="clear.emit()">Effacer</button>
     </div>
-    <ol class="space-y-2">
+    <ol class="space-y-2" aria-live="polite">
       @for (r of rolls(); track r.id; let first = $first) {
         <li
-          class="rounded border-l-4 bg-surface-container p-2.5 transition"
-          [class]="r.result.success ? 'border-emerald-600 dark:border-emerald-400' : 'border-error'"
+          class="rounded border-l-4 bg-surface-container-low p-2.5 transition-opacity"
+          [class]="r.result.success ? 'border-success' : 'border-error'"
           [class.opacity-60]="!first"
+          animate.enter="anim-slide-in"
+          animate.leave="anim-collapse-out"
         >
           <div class="flex items-baseline justify-between gap-2">
-            <span class="truncate text-sm font-medium">{{ r.label }}</span>
+            <span class="truncate text-sm font-semibold">{{ r.label }}</span>
             <span class="text-xs text-on-surface-variant">{{ r.difficulty }}</span>
           </div>
           <div class="flex items-baseline justify-between">
             <span class="text-sm">
-              <span class="font-mono text-xl font-bold">{{ r.result.roll }}</span>
+              @for (v of [r.result.roll]; track v) {
+                <span class="anim-roll inline-block font-mono text-2xl font-bold tabular-nums">{{ v }}</span>
+              }
               <span class="text-on-surface-variant"> / 100</span>
               <span class="ml-1 text-xs text-on-surface-variant">cible {{ r.result.target }}</span>
             </span>
-            <span class="text-sm font-bold" [class]="r.result.success ? 'text-emerald-700 dark:text-emerald-300' : 'text-error'">
+            <span class="text-sm font-bold" [class]="r.result.success ? 'text-success' : 'text-error'">
               {{ r.result.success ? 'Réussite' : 'Échec' }} {{ formatSl(r.result) }} DR
             </span>
           </div>
           @if (r.result.critical) {
-            <p class="text-sm font-bold text-primary">Critique !</p>
+            <p class="anim-pop text-sm font-bold text-primary">Critique !</p>
           } @else if (r.result.fumble) {
-            <p class="text-sm font-bold text-error">Maladresse !</p>
+            <p class="anim-shake text-sm font-bold text-error">Maladresse !</p>
           } @else if (r.result.automatic) {
             <p class="text-xs text-on-surface-variant">{{ r.result.success ? 'Réussite' : 'Échec' }} automatique</p>
           }
           @if (r.previous; as prev) {
             <p class="text-xs text-on-surface-variant">Relancé (1 Fortune) — 1er jet : {{ prev.roll }} / 100, {{ formatSl(prev) }} DR</p>
           } @else if (!r.result.success && canReroll()) {
-            <button mat-button type="button" class="!-ml-2 !mt-1" (click)="reroll.emit(r.id)">
+            <button mat-stroked-button type="button" class="!mt-2 w-full" (click)="reroll.emit(r.id)">
               <mat-icon>replay</mat-icon> Relancer (1 Fortune)
             </button>
           }

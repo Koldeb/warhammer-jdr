@@ -12,6 +12,18 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Démo et connexion
+
+- **Démo** : `/demo`, identifiant `admin`, mot de passe `démo`. Données fictives, aucun appel à Supabase.
+  Le menu du compte permet de « voir en tant que » chaque joueur pour vérifier les droits.
+- **Connexion réelle** : `/connexion` (e-mail + mot de passe via Supabase Auth). Pour l'activer :
+  1. renseigner l'URL et la clé anon du projet dans `src/environments/environment.ts` ;
+  2. exécuter `supabase/schema.sql` dans le SQL Editor de Supabase (table `profiles` + RLS) ;
+  3. créer les comptes dans Authentication → Users, puis passer le MJ en `role = 'mj'`.
+
+Les emplacements à adapter sont marqués `//Changer pour Supabase`. Les fiches et séances sont
+encore mockées : elles passeront dans Supabase via un `SupabaseCampaignRepository` (voir `app.config.ts`).
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

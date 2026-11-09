@@ -1,0 +1,177 @@
+<div class="relative min-h-dvh overflow-x-clip">
+  <!-- Halos décoratifs -->
+  <div class="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[40rem]" aria-hidden="true" style="background: radial-gradient(50rem 26rem at 50% -10%, color-mix(in srgb, var(--mat-sys-primary) 18%, transparent), transparent 70%)"></div>
+
+  <header class="relative mx-auto flex max-w-6xl items-center gap-2 px-4 py-4 sm:px-6">
+    <a routerLink="/demo" class="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight">
+      <span class="avatar h-9 w-9"><mat-icon class="icon-sm">swords</mat-icon></span>
+      Warhammer <span class="text-gradient">JDR</span>
+    </a>
+    <span class="flex-1"></span>
+    <app-theme-toggle />
+    @if (auth.user()) {
+      <a mat-flat-button routerLink="/" class="btn-gradient whitespace-nowrap">Ouvrir l'app</a>
+    } @else {
+      <a mat-button routerLink="/connexion" class="whitespace-nowrap">Se connecter</a>
+    }
+  </header>
+
+  <div class="relative">
+    <!-- Hero + accès démo -->
+    <section class="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-8 pb-16 sm:px-6 lg:grid-cols-[1.2fr_1fr] lg:pt-16">
+      <div>
+        <span class="stagger pill !text-xs font-semibold" style="--i: 0">
+          <span class="relative flex h-2 w-2" aria-hidden="true">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+          </span>
+          Démonstration interactive
+        </span>
+        <h1 class="stagger mt-5 font-display text-4xl leading-[1.08] font-extrabold tracking-tight sm:text-6xl" style="--i: 1">
+          Vos campagnes Warhammer, <span class="text-gradient">enfin réunies.</span>
+        </h1>
+        <p class="stagger mt-5 max-w-xl text-lg text-on-surface-variant" style="--i: 2">
+          Fiches de personnage, jets de dés et journal de campagne pour Warhammer Fantasy Roleplay 4e,
+          sur ordinateur comme sur téléphone, en clair comme en sombre.
+        </p>
+        <div class="stagger mt-8 flex flex-wrap gap-3" style="--i: 3">
+          <a mat-flat-button href="#acces-demo" class="btn-gradient !h-12 !px-6" (click)="focusLogin()">
+            <mat-icon>play_arrow</mat-icon> Essayer la démo
+          </a>
+          <a mat-stroked-button routerLink="/connexion" class="!h-12 !px-6">J'ai déjà un compte</a>
+        </div>
+      </div>
+
+      <!-- Carte d'accès -->
+      <div id="acces-demo" class="anim-pop scroll-mt-24" style="animation-delay: 150ms">
+        <div class="relative rounded border border-outline-variant bg-surface-container-lowest p-6 sm:p-8" style="box-shadow: var(--shadow-lg)">
+          @if (auth.user(); as user) {
+            <h2 class="font-display text-2xl font-extrabold tracking-tight">Vous êtes connecté</h2>
+            <p class="muted mt-2">En tant que <strong class="text-on-surface">{{ user.displayName }}</strong>{{ auth.isDemo() ? ' (démo)' : '' }}.</p>
+            <a mat-flat-button routerLink="/" class="btn-gradient mt-6 !h-12 w-full">
+              <span class="inline-flex items-center gap-1">Ouvrir l'application <mat-icon class="icon-sm">arrow_forward</mat-icon></span>
+            </a>
+          } @else {
+            <h2 class="font-display text-2xl font-extrabold tracking-tight">Accès démo</h2>
+            <p class="muted mt-1">Données fictives, connecté en tant que Maître du Jeu.</p>
+
+            <div class="mt-5 flex items-center gap-3 rounded border border-dashed border-primary/50 p-3 text-sm" style="background: var(--brand-gradient-soft)">
+              <mat-icon class="shrink-0 text-primary">key</mat-icon>
+              <dl class="flex-1 leading-relaxed">
+                <div><dt class="inline text-on-surface-variant">Identifiant : </dt><dd class="inline font-mono font-semibold">{{ credentials.login }}</dd></div>
+                <div><dt class="inline text-on-surface-variant">Mot de passe : </dt><dd class="inline font-mono font-semibold">{{ credentials.password }}</dd></div>
+              </dl>
+              <button mat-button type="button" (click)="fillCredentials()">Remplir</button>
+            </div>
+
+            <form class="mt-5 flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+              <mat-form-field>
+                <mat-label>Identifiant</mat-label>
+                <mat-icon matPrefix class="!mx-2">person</mat-icon>
+                <input #loginInput matInput formControlName="login" autocomplete="username" spellcheck="false" autocapitalize="none" />
+                @if (form.controls.login.hasError('required')) {
+                  <mat-error>Saisissez l'identifiant.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Mot de passe</mat-label>
+                <mat-icon matPrefix class="!mx-2">lock</mat-icon>
+                <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+                <button
+                  mat-icon-button
+                  matSuffix
+                  type="button"
+                  [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                  [attr.aria-pressed]="showPassword()"
+                  (click)="showPassword.set(!showPassword())"
+                >
+                  <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+                @if (form.controls.password.hasError('required')) {
+                  <mat-error>Saisissez le mot de passe.</mat-error>
+                }
+              </mat-form-field>
+
+              @if (error(); as message) {
+                @for (n of [attempt()]; track n) {
+                  <div class="alert alert-error anim-shake" role="alert"><mat-icon class="shrink-0">error</mat-icon> {{ message }}</div>
+                }
+              }
+
+              <button mat-flat-button type="submit" class="btn-gradient !h-12 !text-base">
+                <span class="inline-flex items-center gap-1">Entrer dans la démo <mat-icon class="icon-sm">arrow_forward</mat-icon></span>
+              </button>
+            </form>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Fonctionnalités -->
+    <section class="mx-auto max-w-6xl px-4 pb-16 sm:px-6" aria-labelledby="fonctionnalites">
+      <p class="eyebrow">Fonctionnalités</p>
+      <h2 id="fonctionnalites" class="mt-2 font-display text-3xl font-extrabold tracking-tight">Tout ce qu'il faut autour de la table</h2>
+      <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        @for (f of features; track f.icon; let i = $index) {
+          <li appSpotlight class="card-link stagger !p-6" [style.--i]="i">
+            <span class="avatar h-11 w-11"><mat-icon>{{ f.icon }}</mat-icon></span>
+            <h3 class="mt-4 text-lg font-bold">{{ f.title }}</h3>
+            <p class="muted mt-2">{{ f.text }}</p>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <!-- Essai de jet -->
+    <section class="mx-auto max-w-6xl px-4 pb-24 sm:px-6" aria-labelledby="essai-jet">
+      <div class="grid items-center gap-8 rounded border border-outline-variant p-6 sm:p-10 lg:grid-cols-2" style="background: var(--brand-gradient-soft)">
+        <div>
+          <p class="eyebrow">À essayer</p>
+          <h2 id="essai-jet" class="mt-2 font-display text-3xl font-extrabold tracking-tight">Un test, un clic.</h2>
+          <p class="mt-3 text-on-surface-variant">
+            Sur une fiche, cliquez sur une caractéristique ou une compétence : le d100 est lancé, les degrés de réussite
+            calculés, et un échec peut être relancé avec un point de Fortune.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            matRipple
+            class="pressable flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded border border-outline-variant bg-surface-container-lowest hover:border-primary"
+            style="box-shadow: var(--shadow-md)"
+            [attr.aria-label]="'Lancer un test de ' + sample.label + ' (' + sample.value + ')'"
+            (click)="rollDice()"
+          >
+            <span class="eyebrow">CC</span>
+            <span class="font-display text-5xl font-extrabold tabular-nums">{{ sample.value }}</span>
+            <span class="muted mt-1 flex items-center gap-1"><mat-icon class="icon-sm">casino</mat-icon> Lancer</span>
+          </button>
+
+          <div class="min-h-32 w-full max-w-60 rounded border border-outline-variant bg-surface-container-lowest p-4 text-center" aria-live="polite">
+            @if (roll(); as r) {
+              @for (n of [rollCount()]; track n) {
+                <div class="anim-pop">
+                  <p class="font-mono text-5xl font-bold tabular-nums">
+                    <span class="anim-roll inline-block">{{ r.roll }}</span>
+                  </p>
+                  <p class="muted">sur 100, cible {{ r.target }}</p>
+                  <p class="mt-2 font-bold" [class]="r.success ? 'text-success' : 'text-error'">
+                    {{ r.success ? 'Réussite' : 'Échec' }} {{ formatSl(r) }} DR
+                    @if (r.critical) { · Critique ! } @else if (r.fumble) { · Maladresse ! }
+                  </p>
+                </div>
+              }
+            } @else {
+              <p class="muted flex h-full min-h-24 items-center justify-center">Cliquez sur la tuile pour lancer le dé.</p>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="border-t border-outline-variant py-6 text-center text-sm text-on-surface-variant">
+    Warhammer JDR — outil de table non officiel pour Warhammer Fantasy Roleplay 4e.
+  </footer>
+</div>

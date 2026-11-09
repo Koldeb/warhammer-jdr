@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 export type Theme = 'light' | 'dark';
 
@@ -7,7 +7,7 @@ export type Theme = 'light' | 'dark';
 const STORAGE_KEY = 'wjdr-theme';
 
 /** Couleur de la barre du navigateur mobile pour chaque thème. */
-const THEME_COLORS: Record<Theme, string> = { light: '#ffffff', dark: '#0a0a0a' };
+const THEME_COLORS: Record<Theme, string> = { light: '#ffffff', dark: '#09090b' };
 
 /**
  * Thème clair (blanc / bleu) ou sombre (noir / jaune).
@@ -21,16 +21,41 @@ export class ThemeService {
   readonly isDark = computed(() => this.theme() === 'dark');
 
   constructor() {
-    effect(() => {
-      const theme = this.theme();
-      this.document.documentElement.classList.toggle('dark', theme === 'dark');
-      this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[theme]);
-      storage()?.setItem(STORAGE_KEY, theme);
-    });
+    this.apply(this.theme());
   }
 
-  toggle(): void {
-    this.theme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+  /**
+   * Bascule le thème. Avec l'API View Transitions, le nouveau thème se révèle en cercle
+   * depuis le point cliqué (voir styles.css) ; sinon, il s'applique directement.
+   */
+  toggle(origin?: { x: number; y: number }): void {
+    const next: Theme = this.isDark() ? 'light' : 'dark';
+    const root = this.document.documentElement;
+    const view = this.document.defaultView;
+    const reduceMotion = view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    if (!this.document.startViewTransition || reduceMotion || !view) {
+      this.apply(next);
+      return;
+    }
+
+    const x = origin?.x ?? view.innerWidth / 2;
+    const y = origin?.y ?? 0;
+    const radius = Math.hypot(Math.max(x, view.innerWidth - x), Math.max(y, view.innerHeight - y));
+    root.style.setProperty('--theme-x', `${x}px`);
+    root.style.setProperty('--theme-y', `${y}px`);
+    root.style.setProperty('--theme-r', `${radius}px`);
+    root.dataset['themeTransition'] = '';
+
+    const transition = this.document.startViewTransition(() => this.apply(next));
+    transition.finished.finally(() => delete root.dataset['themeTransition']);
+  }
+
+  private apply(theme: Theme): void {
+    this.theme.set(theme);
+    this.document.documentElement.classList.toggle('dark', theme === 'dark');
+    this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[theme]);
+    storage()?.setItem(STORAGE_KEY, theme);
   }
 
   private initialTheme(): Theme {

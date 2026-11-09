@@ -10,14 +10,16 @@
   --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-sans: 'Inter', Roboto, system-ui, sans-serif;
 
-  /* Durée commune de toutes les transitions et effets au survol. */
   --default-transition-duration: 200ms;
-  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --default-transition-timing-function: var(--ease-out);
 
   --color-primary: var(--mat-sys-primary);
   --color-on-primary: var(--mat-sys-on-primary);
   --color-primary-container: var(--mat-sys-primary-container);
   --color-on-primary-container: var(--mat-sys-on-primary-container);
+  --color-secondary: var(--mat-sys-secondary);
+  --color-secondary-container: var(--mat-sys-secondary-container);
+  --color-on-secondary-container: var(--mat-sys-on-secondary-container);
   --color-tertiary: var(--mat-sys-tertiary);
   --color-tertiary-container: var(--mat-sys-tertiary-container);
   --color-on-tertiary-container: var(--mat-sys-on-tertiary-container);
@@ -34,27 +36,75 @@
   --color-on-surface-variant: var(--mat-sys-on-surface-variant);
   --color-outline: var(--mat-sys-outline);
   --color-outline-variant: var(--mat-sys-outline-variant);
+  --color-success: var(--app-success);
+  --color-success-container: var(--app-success-container);
+  --color-on-success-container: var(--app-on-success-container);
 }
 
+/* ---------------------------------------------------------------------------------------------
+ * Tokens : mouvement, dégradés, ombres
+ * ------------------------------------------------------------------------------------------- */
+:root {
+  /* Décélération franche pour les entrées, ressort léger pour les retours au clic. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-spring: linear(
+    0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%,
+    0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001 85.9%, 1
+  );
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 450ms;
+
+  --brand-gradient: linear-gradient(135deg, var(--mat-sys-primary) 0%, var(--mat-sys-tertiary) 100%);
+  --brand-gradient-soft: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mat-sys-primary) 14%, transparent),
+    color-mix(in srgb, var(--mat-sys-tertiary) 10%, transparent)
+  );
+
+  --shadow-color: 222 47% 11%;
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 1px 3px hsl(var(--shadow-color) / 0.04);
+  --shadow-md: 0 2px 4px hsl(var(--shadow-color) / 0.05), 0 8px 20px -6px hsl(var(--shadow-color) / 0.12);
+  --shadow-lg: 0 4px 8px hsl(var(--shadow-color) / 0.05), 0 20px 40px -12px hsl(var(--shadow-color) / 0.2);
+
+  --app-success: #15803d;
+  --app-success-container: #dcfce7;
+  --app-on-success-container: #14532d;
+}
+
+:root.dark {
+  --shadow-color: 0 0% 0%;
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.5);
+  --shadow-md: 0 4px 12px -2px hsl(var(--shadow-color) / 0.6);
+  --shadow-lg: 0 20px 40px -12px hsl(var(--shadow-color) / 0.8),
+    0 0 0 1px color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+
+  --app-success: #4ade80;
+  --app-success-container: #052e16;
+  --app-on-success-container: #bbf7d0;
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------------------------- */
 @layer base {
   h1,
   h2,
   h3 {
     @apply font-display;
+    text-wrap: balance;
   }
-
-  /* Bascule de thème en douceur. */
-  body,
-  .mat-mdc-card,
-  .mat-toolbar,
-  .mat-drawer,
-  .mat-expansion-panel {
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease,
-      transform 0.2s ease;
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--mat-sys-primary) 28%, transparent);
+  }
+  /* Focus clavier visible sur les éléments non Material (liens-cartes, tuiles...). */
+  :where(a, button, [tabindex]):focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -63,41 +113,191 @@
   border-right-style: hidden;
 }
 
-/* Cartes Material : légère élévation au survol. */
-.mat-mdc-card.mat-mdc-card-outlined:hover {
-  border-color: var(--mat-sys-primary);
-  box-shadow: 0 4px 16px -6px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent);
+/* Icônes Material plus petites (hors @layer pour primer sur les styles de mat-icon). */
+.mat-icon.icon-sm {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
 }
 
+/* Fond de l'application : halos de couleur discrets, fixes pendant le défilement. */
+.app-bg {
+  background:
+    radial-gradient(60rem 36rem at -10% -20%, color-mix(in srgb, var(--mat-sys-primary) 10%, transparent), transparent 60%),
+    radial-gradient(50rem 30rem at 110% -10%, color-mix(in srgb, var(--mat-sys-tertiary) 9%, transparent), transparent 60%),
+    var(--mat-sys-surface);
+}
+
+/* Barre du haut et menu latéral en verre dépoli. */
+.glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+/* Barre du haut : ombre qui apparaît au défilement (animation pilotée par le scroll). */
+.app-toolbar {
+  border-bottom: 1px solid transparent;
+}
+@supports (animation-timeline: scroll()) {
+  .app-toolbar {
+    animation: toolbar-scrolled linear both;
+    animation-timeline: scroll(nearest);
+    animation-range: 0 80px;
+  }
+}
+@keyframes toolbar-scrolled {
+  to {
+    border-bottom-color: var(--mat-sys-outline-variant);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Cartes Material : ombre douce, élévation au survol. */
+.mat-mdc-card.mat-mdc-card-outlined {
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--duration) var(--ease-out),
+    border-color var(--duration) var(--ease-out),
+    background-color var(--duration) var(--ease-out);
+}
+.mat-mdc-card.mat-mdc-card-outlined:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Retour tactile au clic sur tous les boutons Material. */
+.mat-mdc-button-base {
+  transition: transform 400ms var(--ease-spring);
+}
+.mat-mdc-button-base:active:not(:disabled) {
+  transform: scale(0.95);
+  transition-duration: 100ms;
+}
+
+/* Bouton d'action principal en dégradé (à poser sur un mat-flat-button). */
+.btn-gradient.mat-mdc-unelevated-button:not(:disabled) {
+  background-image: var(--brand-gradient);
+  color: var(--mat-sys-on-primary);
+  box-shadow: 0 6px 20px -8px color-mix(in srgb, var(--mat-sys-primary) 70%, transparent);
+  transition:
+    transform 400ms var(--ease-spring),
+    box-shadow var(--duration) var(--ease-out),
+    filter var(--duration) var(--ease-out);
+}
+.btn-gradient.mat-mdc-unelevated-button:not(:disabled):hover {
+  filter: brightness(1.08) saturate(1.1);
+  box-shadow: 0 10px 28px -8px color-mix(in srgb, var(--mat-sys-primary) 80%, transparent);
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Composants
+ * ------------------------------------------------------------------------------------------- */
 @layer components {
   .page-title {
-    @apply font-display text-3xl font-bold tracking-tight text-on-surface sm:text-4xl;
+    @apply font-display text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl;
+  }
+  .eyebrow {
+    @apply font-display text-xs font-bold tracking-[0.2em] text-primary uppercase;
   }
   .section-title {
-    @apply mb-3 flex items-center gap-2 font-display text-lg font-semibold text-on-surface [&>.mat-icon]:text-primary;
+    @apply mb-3 flex items-center gap-2 font-display text-lg font-bold text-on-surface [&>.mat-icon]:text-primary;
   }
   .muted {
     @apply text-sm text-on-surface-variant;
   }
-
-  /* Carte cliquable (lien vers une fiche, une séance...) : ombre légère, plus marquée au survol. */
-  .card-link {
-    @apply block rounded border border-outline-variant bg-surface-container-lowest p-4 shadow-sm shadow-black/5 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg hover:shadow-black/10 focus-visible:outline-2 focus-visible:outline-primary active:translate-y-0 active:shadow-sm dark:bg-surface-container-low dark:shadow-black/40 dark:hover:shadow-black/60;
+  .text-gradient {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
+  /* Avatar en dégradé (initiale d'un personnage, d'un joueur...). */
   .avatar {
-    @apply flex shrink-0 items-center justify-center rounded-full bg-primary-container font-display font-bold text-on-primary-container;
+    @apply flex shrink-0 items-center justify-center rounded-full font-display font-bold text-on-primary;
+    background-image: var(--brand-gradient);
+    box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--mat-sys-primary) 60%, transparent);
+  }
+
+  /*
+   * Carte cliquable : ombre légère au repos ; au survol elle s'élève, un liseré en dégradé apparaît
+   * et un halo suit le pointeur (directive appSpotlight) ; au clic elle s'enfonce avec un ressort.
+   */
+  .card-link {
+    @apply relative isolate block rounded border border-outline-variant bg-surface-container-lowest p-4 text-left;
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform 450ms var(--ease-spring),
+      box-shadow var(--duration) var(--ease-out),
+      border-color var(--duration) var(--ease-out);
+  }
+  .card-link::before,
+  .card-link::after {
+    content: '';
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration) var(--ease-out);
+  }
+  /* Liseré dégradé. */
+  .card-link::before {
+    inset: -1px;
+    padding: 1px;
+    background: var(--brand-gradient);
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+  /* Halo qui suit le pointeur. */
+  .card-link::after {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      320px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      color-mix(in srgb, var(--mat-sys-primary) 10%, transparent),
+      transparent 70%
+    );
+  }
+  .card-link:hover,
+  .card-link:focus-visible {
+    @apply -translate-y-0.5 border-transparent;
+    box-shadow: var(--shadow-lg);
+  }
+  .card-link:hover::before,
+  .card-link:hover::after,
+  .card-link:focus-visible::before {
+    opacity: 1;
+  }
+  .card-link:active {
+    @apply translate-y-0 scale-[0.985];
+    box-shadow: var(--shadow-sm);
+    transition-duration: 100ms;
+  }
+
+  /* Élément cliquable générique : léger enfoncement au clic. */
+  .pressable {
+    transition:
+      transform 400ms var(--ease-spring),
+      background-color var(--duration) var(--ease-out),
+      border-color var(--duration) var(--ease-out),
+      box-shadow var(--duration) var(--ease-out),
+      color var(--duration) var(--ease-out);
+  }
+  .pressable:active:not(:disabled) {
+    transform: scale(0.94);
+    transition-duration: 100ms;
   }
 
   /* Tuile de statistique (Blessures, Fortune...). */
   .stat {
-    @apply flex flex-col items-center justify-center gap-1 rounded border border-outline-variant bg-surface-container-lowest p-3 text-center transition hover:border-primary hover:shadow-md hover:shadow-black/5 dark:bg-surface-container-low;
+    @apply flex flex-col items-center justify-center gap-1 rounded border border-outline-variant bg-surface-container-lowest p-3 text-center transition hover:border-primary/50;
+    box-shadow: var(--shadow-sm);
   }
   .stat-label {
-    @apply flex items-center gap-1 text-xs tracking-wide text-on-surface-variant uppercase;
+    @apply flex items-center gap-1 text-xs font-medium tracking-wide text-on-surface-variant uppercase;
   }
   .stat-value {
-    @apply text-xl font-bold text-on-surface tabular-nums;
+    @apply inline-block text-xl font-bold text-on-surface tabular-nums;
   }
   .counter {
     @apply flex items-center gap-1;
@@ -105,23 +305,224 @@
 
   /* Ligne éditable d'une liste (compétence, arme...). */
   .edit-row {
-    @apply rounded border border-outline-variant bg-surface-container-low p-3 transition hover:border-outline;
+    @apply rounded border border-outline-variant bg-surface-container-lowest p-3 transition hover:border-outline;
   }
 
   /* Élément de liste dans une carte (talent, arme, PNJ...). */
   .tile {
-    @apply rounded bg-surface-container-low p-3 transition hover:bg-surface-container dark:bg-surface-container;
+    @apply rounded bg-surface-container-low p-3 transition hover:bg-surface-container;
   }
 
   /* Pastille d'information (lieu, date...). */
   .pill {
-    @apply inline-flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1 text-sm;
+    @apply inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1 text-sm;
+  }
+
+  /* Bandeau d'alerte. */
+  .alert {
+    @apply flex items-start gap-2 rounded p-3 text-sm;
+  }
+  .alert-error {
+    @apply bg-error-container text-on-error-container;
+  }
+  .alert-info {
+    @apply bg-secondary-container text-on-secondary-container;
+  }
+
+  /* Lien d'évitement : visible seulement au clavier. */
+  .skip-link {
+    @apply fixed top-2 left-2 z-50 -translate-y-20 rounded bg-primary px-4 py-2 font-semibold text-on-primary transition focus:translate-y-0;
   }
 }
 
-/* Icônes Material plus petites (hors @layer pour primer sur les styles de mat-icon). */
-.mat-icon.icon-sm {
-  width: 18px;
-  height: 18px;
-  font-size: 18px;
+/* ---------------------------------------------------------------------------------------------
+ * Animations
+ * Les classes anim-* sont posées par animate.enter / animate.leave (Angular) ou directement.
+ * ------------------------------------------------------------------------------------------- */
+
+/* Apparition en cascade : style="--i: 3" décale l'élément. */
+.stagger {
+  animation: fade-up var(--duration-slow) var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 12) * 45ms);
+}
+.anim-fade-up {
+  animation: fade-up var(--duration-slow) var(--ease-out) both;
+}
+.anim-pop {
+  animation: pop 400ms var(--ease-spring) both;
+}
+.anim-slide-in {
+  animation: slide-in var(--duration-slow) var(--ease-out) both;
+}
+.anim-fade-out {
+  animation: fade-out var(--duration) var(--ease-in) both;
+}
+.anim-collapse-out {
+  animation: collapse-out 250ms var(--ease-in) both;
+}
+.anim-shake {
+  animation: shake 400ms var(--ease-out) both;
+}
+/* Valeur qui change (compteurs). */
+.anim-bump {
+  animation: bump 350ms var(--ease-spring) both;
+}
+/* Résultat d'un jet de dés. */
+.anim-roll {
+  animation: roll 500ms var(--ease-out) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.97);
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes collapse-out {
+  to {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.25);
+    color: var(--mat-sys-primary);
+  }
+}
+@keyframes roll {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-60%) rotate(-12deg);
+  }
+  60% {
+    filter: blur(0);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * View Transitions : changement de page et bascule de thème
+ * ------------------------------------------------------------------------------------------- */
+.app-toolbar {
+  view-transition-name: toolbar;
+}
+.app-sidenav {
+  view-transition-name: sidenav;
+}
+
+/* Changement de page : l'ancienne s'efface, la nouvelle monte en fondu. */
+::view-transition-old(root) {
+  animation: 160ms var(--ease-in) both vt-fade-out;
+}
+::view-transition-new(root) {
+  animation: 320ms var(--ease-out) both vt-fade-in;
+}
+/* Éléments partagés (avatar d'un personnage de la liste à la fiche...). */
+::view-transition-group(*) {
+  animation-duration: 380ms;
+  animation-timing-function: var(--ease-out);
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Bascule de thème : le nouveau thème se révèle en cercle depuis le bouton. */
+html[data-theme-transition] * {
+  view-transition-name: none !important;
+}
+html[data-theme-transition]::view-transition-old(root) {
+  animation: none;
+}
+html[data-theme-transition]::view-transition-new(root) {
+  animation: theme-reveal 550ms var(--ease-out) both;
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 0));
+  }
+  to {
+    clip-path: circle(var(--theme-r, 150vmax) at var(--theme-x, 50%) var(--theme-y, 0));
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * Accessibilité : mouvement réduit
+ * ------------------------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after,
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Squelette de chargement (remplace le contenu pendant le chargement). */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--mat-sys-surface-container);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
 }

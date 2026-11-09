@@ -10,4 +10,9 @@ export const environment = {
     //Changer pour Supabase
     anonKey: 'VOTRE-CLE-ANON-PUBLIQUE',
   },
+  /** Identifiants de la page de démonstration (données mockées, aucun appel à Supabase). */
+  demo: {
+    login: 'admin',
+    password: 'démo',
+  },
 };

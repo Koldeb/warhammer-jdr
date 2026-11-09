@@ -1,10 +1,15 @@
-// Thèmes Angular Material 3.
-// - clair (par défaut) : blanc, bleu en couleur d'accent ;
-// - sombre (classe .dark sur <html>, voir ThemeService) : noir, jaune en couleur d'accent.
+// Thèmes Angular Material 3, palettes générées par `ng generate @angular/material:theme-color` (src/theme) :
+// - clair (par défaut) : blanc, bleu #2563EB, ciel #0EA5E9, violet #7C3AED ;
+// - sombre (classe .dark sur <html>, voir ThemeService) : noir, jaune #FACC15, ambre #F59E0B, orange #F97316.
 // Les couleurs sont exposées en variables CSS --mat-sys-* et réutilisées par Tailwind (voir styles.css).
 @use '@angular/material' as mat;
+@use 'theme/light-colors' as light;
+@use 'theme/dark-colors' as dark;
 
 $radius: 4px;
+
+// Indicateurs de focus clavier visibles sur tous les composants Material (accessibilité).
+@include mat.strong-focus-indicators((border-style: solid, border-width: 2px, border-radius: $radius));
 
 html {
   color-scheme: light;
@@ -13,8 +18,8 @@ html {
     (
       color: (
         theme-type: light,
-        primary: mat.$blue-palette,
-        tertiary: mat.$azure-palette,
+        primary: light.$primary-palette,
+        tertiary: light.$tertiary-palette,
       ),
       typography: (
         plain-family: 'Inter, Roboto, system-ui, sans-serif',
@@ -24,20 +29,42 @@ html {
     )
   );
 
-  // Fond blanc pur plutôt que le blanc teinté de Material.
+  // Fond blanc pur.
   --mat-sys-surface: #ffffff;
   --mat-sys-background: #ffffff;
   --mat-sys-surface-container-lowest: #ffffff;
-  --mat-sys-surface-container-low: #f8fafd;
+  --mat-focus-indicator-border-color: var(--mat-sys-primary);
 
-  // Angles des cartes et panneaux.
   @include mat.card-overrides(
     (
       elevated-container-shape: $radius,
       outlined-container-shape: $radius,
+      outlined-container-color: var(--mat-sys-surface-container-lowest),
+      outlined-outline-color: var(--mat-sys-outline-variant),
     )
   );
-  @include mat.expansion-overrides((container-shape: $radius));
+  @include mat.expansion-overrides(
+    (
+      container-shape: $radius,
+      container-background-color: var(--mat-sys-surface-container-lowest),
+    )
+  );
+  @include mat.sidenav-overrides(
+    (
+      content-background-color: transparent,
+      container-background-color: color-mix(in srgb, var(--mat-sys-surface) 78%, transparent),
+      container-shape: 0,
+    )
+  );
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: color-mix(in srgb, var(--mat-sys-surface) 72%, transparent),
+    )
+  );
+
+  @media (prefers-contrast: more) {
+    @include light.high-contrast-overrides(light);
+  }
 }
 
 html.dark {
@@ -47,20 +74,20 @@ html.dark {
     (
       color: (
         theme-type: dark,
-        primary: mat.$yellow-palette,
-        tertiary: mat.$orange-palette,
+        primary: dark.$primary-palette,
+        tertiary: dark.$tertiary-palette,
       ),
     )
   );
 
-  // Fond noir profond.
-  --mat-sys-surface: #0a0a0a;
-  --mat-sys-background: #0a0a0a;
-  --mat-sys-surface-container-lowest: #050505;
-  --mat-sys-surface-container-low: #121212;
-  --mat-sys-surface-container: #171717;
-  --mat-sys-surface-container-high: #1f1f1f;
-  --mat-sys-surface-container-highest: #2a2a2a;
+  // Noir profond.
+  --mat-sys-surface: #09090b;
+  --mat-sys-background: #09090b;
+  --mat-sys-surface-container-lowest: #0c0c0e;
+
+  @media (prefers-contrast: more) {
+    @include dark.high-contrast-overrides(dark);
+  }
 }
 
 body {

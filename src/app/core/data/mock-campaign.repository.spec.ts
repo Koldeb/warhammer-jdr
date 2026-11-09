@@ -14,19 +14,19 @@ describe('MockCampaignRepository — règles d\'accès', () => {
   });
 
   it('un joueur ne voit que sa fiche', async () => {
-    auth.login('julie');
+    auth.impersonate('julie');
     const characters = await repo.getCharacters();
     expect(characters.map((c) => c.id)).toEqual(['thorek-gromsson']);
   });
 
   it("un joueur ne peut pas ouvrir la fiche d'un autre", async () => {
-    auth.login('julie');
+    auth.impersonate('julie');
     expect(await repo.getCharacter('johann-weber')).toBeUndefined();
     expect(await repo.getCharacter('thorek-gromsson')).toBeDefined();
   });
 
   it('le MJ voit toutes les fiches', async () => {
-    auth.login('paul');
+    auth.impersonate('paul');
     expect(await repo.getCharacters()).toHaveLength(4);
   });
 
@@ -35,14 +35,14 @@ describe('MockCampaignRepository — règles d\'accès', () => {
   });
 
   it('les notes MJ sont cachées aux joueurs', async () => {
-    auth.login('sophie');
+    auth.impersonate('sophie');
     expect(await repo.getGmNotes('session-1')).toBeUndefined();
-    auth.login('paul');
+    auth.impersonate('paul');
     expect((await repo.getGmNotes('session-1'))?.content).toContain('Vossberg');
   });
 
   it('les séances sont visibles par les joueurs', async () => {
-    auth.login('marc');
+    auth.impersonate('marc');
     expect(await repo.getSessions()).toHaveLength(3);
   });
 });
@@ -59,7 +59,7 @@ describe('MockCampaignRepository — modification des fiches', () => {
   });
 
   it('un joueur peut modifier sa fiche', async () => {
-    auth.login('julie');
+    auth.impersonate('julie');
     const thorek = (await repo.getCharacter('thorek-gromsson'))!;
     thorek.wounds.current = 1;
     await repo.updateCharacter(thorek);
@@ -67,14 +67,14 @@ describe('MockCampaignRepository — modification des fiches', () => {
   });
 
   it("un joueur ne peut pas modifier la fiche d'un autre", async () => {
-    auth.login('paul');
+    auth.impersonate('paul');
     const johann = (await repo.getCharacter('johann-weber'))!;
-    auth.login('julie');
+    auth.impersonate('julie');
     await expect(repo.updateCharacter(johann)).rejects.toThrow();
   });
 
   it('un joueur ne peut pas changer le propriétaire de sa fiche', async () => {
-    auth.login('julie');
+    auth.impersonate('julie');
     const thorek = (await repo.getCharacter('thorek-gromsson'))!;
     thorek.playerId = 'antoine';
     const saved = await repo.updateCharacter(thorek);
@@ -82,14 +82,14 @@ describe('MockCampaignRepository — modification des fiches', () => {
   });
 
   it('le MJ peut modifier toutes les fiches', async () => {
-    auth.login('paul');
+    auth.impersonate('paul');
     const lotte = (await repo.getCharacter('lotte-fauxchemin'))!;
     lotte.corruption = 2;
     await expect(repo.updateCharacter(lotte)).resolves.toMatchObject({ corruption: 2 });
   });
 
   it('les modifications survivent à une nouvelle instance (localStorage)', async () => {
-    auth.login('julie');
+    auth.impersonate('julie');
     const thorek = (await repo.getCharacter('thorek-gromsson'))!;
     thorek.experience.current = 999;
     await repo.updateCharacter(thorek);
@@ -106,7 +106,7 @@ describe('MockCampaignRepository — plafonds', () => {
     localStorage.clear();
     TestBed.configureTestingModule({ providers: [MockCampaignRepository] });
     const repo = TestBed.inject(MockCampaignRepository);
-    TestBed.inject(AuthService).login('antoine');
+    TestBed.inject(AuthService).impersonate('antoine');
     const johann = (await repo.getCharacter('johann-weber'))!;
     johann.points.fortune = 50;
     johann.wounds.current = 50;

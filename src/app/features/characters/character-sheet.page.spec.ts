@@ -11,7 +11,7 @@ describe('CharacterSheetPage', () => {
     TestBed.configureTestingModule({
       providers: [provideRouter([]), { provide: CampaignRepository, useClass: MockCampaignRepository }],
     });
-    TestBed.inject(AuthService).login(user);
+    TestBed.inject(AuthService).impersonate(user);
     const fixture = TestBed.createComponent(CharacterSheetPage);
     fixture.componentRef.setInput('id', characterId);
     await fixture.whenStable();

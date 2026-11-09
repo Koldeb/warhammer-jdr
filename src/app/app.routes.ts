@@ -1,11 +1,20 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
+  // Pages plein écran, sans barre de navigation (data.bare, voir App).
   {
     path: 'connexion',
     title: 'Connexion',
+    canActivate: [guestGuard],
+    data: { bare: true },
     loadComponent: () => import('./features/login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'demo',
+    title: 'Démonstration',
+    data: { bare: true },
+    loadComponent: () => import('./features/demo/demo.page').then((m) => m.DemoPage),
   },
   {
     path: '',

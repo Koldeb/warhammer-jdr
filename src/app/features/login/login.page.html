@@ -1,21 +1,82 @@
-<div class="flex min-h-[70dvh] items-center justify-center">
-  <mat-card appearance="outlined" class="w-full max-w-md">
-    <mat-card-header class="!flex-col !items-center !pt-8 text-center">
-      <div class="avatar mb-4 h-16 w-16"><mat-icon class="!h-8 !w-8 !text-[2rem]">shield_person</mat-icon></div>
-      <mat-card-title class="!font-display !text-2xl">Qui êtes-vous ?</mat-card-title>
-      <!-- //Changer pour Supabase : remplacer la liste de profils par un formulaire e-mail / mot de passe (supabase.auth). -->
-      <mat-card-subtitle>Connexion simulée en attendant Supabase.</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content class="!pt-4">
-      <mat-action-list>
-        @for (u of auth.availableUsers; track u.id) {
-          <button mat-list-item type="button" (click)="login(u.id)">
-            <span matListItemAvatar class="avatar h-10 w-10">{{ u.displayName.charAt(0) }}</span>
-            <span matListItemTitle>{{ u.displayName }}</span>
-            <span matListItemLine>{{ u.role === 'mj' ? 'Maître du Jeu' : 'Joueur' }}</span>
-          </button>
-        }
-      </mat-action-list>
-    </mat-card-content>
-  </mat-card>
-</div>
+<app-auth-shell>
+  <div class="stagger" style="--i: 0">
+    <p class="eyebrow">Bon retour</p>
+    <h1 class="page-title mt-2">Connexion</h1>
+    <p class="muted mt-2">Accédez à vos fiches, au journal et aux jets de dés de votre campagne.</p>
+  </div>
+
+  @if (!auth.supabaseConfigured) {
+    <div class="alert alert-info stagger mt-6" style="--i: 1" role="status">
+      <mat-icon class="shrink-0">info</mat-icon>
+      <div>
+        <p class="font-semibold">Supabase n'est pas encore configuré</p>
+        <p class="mt-1">
+          Renseignez l'URL et la clé du projet dans <code class="font-mono text-xs">src/environments/environment.ts</code>.
+          En attendant, vous pouvez explorer la démo.
+        </p>
+      </div>
+    </div>
+  }
+
+  <form class="stagger mt-6 flex flex-col gap-4" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <mat-form-field>
+      <mat-label>Adresse e-mail</mat-label>
+      <mat-icon matPrefix class="!mx-2">mail</mat-icon>
+      <input matInput type="email" formControlName="email" autocomplete="email" inputmode="email" spellcheck="false" />
+      @if (form.controls.email.hasError('required')) {
+        <mat-error>Saisissez votre adresse e-mail.</mat-error>
+      } @else if (form.controls.email.hasError('email')) {
+        <mat-error>Cette adresse e-mail n'est pas valide.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Mot de passe</mat-label>
+      <mat-icon matPrefix class="!mx-2">lock</mat-icon>
+      <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+        [attr.aria-pressed]="showPassword()"
+        (click)="showPassword.set(!showPassword())"
+      >
+        <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      @if (form.controls.password.hasError('required')) {
+        <mat-error>Saisissez votre mot de passe.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (error(); as message) {
+      @for (n of [attempt()]; track n) {
+        <div class="alert alert-error anim-shake" role="alert">
+          <mat-icon class="shrink-0">error</mat-icon> {{ message }}
+        </div>
+      }
+    }
+
+    <button mat-flat-button type="submit" class="btn-gradient !h-12 !text-base" [disabled]="submitting() || !auth.supabaseConfigured">
+      @if (submitting()) {
+        <mat-progress-spinner mode="indeterminate" diameter="20" class="mr-2 inline-block align-middle" aria-hidden="true" />
+        Connexion…
+      } @else {
+        <span class="inline-flex items-center gap-1">Se connecter <mat-icon class="icon-sm">arrow_forward</mat-icon></span>
+      }
+    </button>
+  </form>
+
+  <div class="stagger mt-8 flex items-center gap-3 text-xs text-on-surface-variant uppercase" style="--i: 3" aria-hidden="true">
+    <span class="h-px flex-1 bg-outline-variant"></span> ou <span class="h-px flex-1 bg-outline-variant"></span>
+  </div>
+
+  <a routerLink="/demo" class="card-link stagger mt-6 flex items-center gap-3" style="--i: 4">
+    <span class="avatar h-10 w-10"><mat-icon class="icon-sm">science</mat-icon></span>
+    <span class="flex-1">
+      <span class="block font-semibold">Découvrir la démo</span>
+      <span class="muted block">Explorez le projet avec des données fictives.</span>
+    </span>
+    <mat-icon class="text-on-surface-variant">chevron_right</mat-icon>
+  </a>
+</app-auth-shell>

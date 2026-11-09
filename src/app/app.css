@@ -1,7 +1,0 @@
-.theme-toggle .mat-icon {
-  transition: transform 0.2s ease;
-}
-
-.theme-toggle:hover .mat-icon {
-  transform: rotate(-25deg) scale(1.1);
-}
